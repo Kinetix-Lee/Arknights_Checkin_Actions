@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>明日方舟签到</title>
+</head>
+<body>
+<form action="index.php" method="post">
+    <input type="text" oninput = "value=value.replace(/[^\d]/g,'')" placeholder="账号" name="account">
+    <input type="password" placeholder="密码" name="password"/>
+    <br><br>
+    <input type="text" placeholder="活动签到id(为空不签到)" name="activity_id"/>
+    <br><br>
+    <input type="submit" value="一键签到">
+</form>
+</body>
+</html>
