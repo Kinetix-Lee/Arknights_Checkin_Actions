@@ -1,3 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>明日方舟签到-控制台</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+    <style>body{background-color: #295d82;}div{ display:inline}</style>
+</head>
+<body>
+<div id="return_btn" onclick="window.location.href='./index.html'"><img src="back.png"/></div><font size="6"> 控制台</font><br><br>
+</body>
+</html>
 <?php
 $HMAC_KEY = '91240f70c09a08a6bc72af1a5c8d4670';
 
@@ -96,25 +107,31 @@ class Player {
 }
 
 // main
-if (empty($_POST['account']) or empty($_POST['password'])){
-    report_error('错误: 账号或密码不能为空');
+if (empty($_POST['access_token'])){
+    if (empty($_POST['account']) or empty($_POST['password'])){
+        report_error('错误: 账号或密码不能为空');
+    }
+}
+if (!empty($_POST['activity_id'])) $GLOBALS['CHECKIN_ACTIVITY_ID']=$_POST['activity_id'];
+updata_config();
+$player=new Player();
+$player->init(get_random_device_id());
+if (!empty($_POST['access_token'])){
+    $player->set_access_token($_POST['access_token']);
 }else{
-    if (!empty($_POST['activity_id'])) $GLOBALS['CHECKIN_ACTIVITY_ID']=$_POST['activity_id'];
-    updata_config();
-    $player=new Player();
-    $player->init(get_random_device_id());
     $player->set_account($_POST['account']);
     $player->set_password($_POST['password']);
-    play_login($player);
 }
+play_login($player);
+
 
 function play_login($player){
-    if ($player->get_account() and $player->get_password()){
-        // 账号密码登录
-        user_login($player);
-    } else{
+    if ($player->get_access_token()){
         // auth登录
         auth_login($player);
+    } else{
+        // 账号密码登录
+        user_login($player);
     }
     sleep(1);
 
@@ -269,13 +286,17 @@ function user_login($player){
 }
 // auth登录
 function auth_login($player){
-    $sign=u8_sign($player->get_access_token());
+    $sign=u8_sign("token={$player->get_access_token()}");
     $data = json_encode(array('token'=>$player->get_access_token(),'sign'=>$sign));
     $res=post_to_as('/user/auth', $data);
     if ($res=='error'){
         report_error("auth登录失败: 连接错误");
     }else{
         $j=json_decode($res);
+        if (array_key_exists('error',$j)){
+            report_error("auth登录失败: data={$data}, err_code={$res}");
+            return;
+        }
         $player->set_channel_uid($j->uid);
         report_normal("auth登录成功: channel_uid:{$j->uid}");
     }
@@ -317,7 +338,7 @@ function get_token($player){
 // 登录游戏服务器
 function game_login($player){
     if (!$GLOBALS['RES_VERSION'] or !$GLOBALS['CLIENT_VERSION']){
-        report_error('登录失败: 获取客户端版本号失败!');
+        report_error('登录失败: 获取客户端版本号失败');
         return;
     }
     $deviceId=$player->get_device_id();
@@ -429,9 +450,11 @@ function delivery_batch_order($player){
         $j=json_decode($res);
         $item_string='';
         $item_number=0;
-        foreach($j->delivered as $item){
-            $item_number++;
-            $item_string.="{$item->type}共{$item->count}个";
+        foreach($j->delivered as $room){
+            foreach($room as $item) {
+                $item_number++;
+                $item_string .= "{$item->type}共{$item->count}个";
+            }
         }
         report_normal("结算贸易站订单完成: uid:{$player->get_uid()}, 获得物品数: {$item_number}, 获得物品数据: {$item_string}");
     }
@@ -553,10 +576,10 @@ function get_random_device_id2(){return '86'.get_random_digits(13);}
 function get_random_device_id3(){return md5(get_random_string(12));}
 
 function report_normal($str){
-    echo "<br>".$str;
+    echo $str."<br>";
 }
 function report_error($str){
-    echo "<font color=\"#FF0000\"><br>".$str."</font>";
+    echo "<font color=\"#FF0000\">".$str."<br></font>";
     exit("<br>"."中止程序");
 }
 function get_random_string($length){

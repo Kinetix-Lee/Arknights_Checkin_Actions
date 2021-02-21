@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+    <meta charset="UTF-8">
+    <title>明日方舟签到</title>
+    <!--CSS from https://www.jb51.net/web/458871.html-->
+    <style>
+        html{
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        body{
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            background-color: #295d82;
+        }
+        #checkin{
+            width: 100px;
+        }
+        #login{
+            position: absolute;
+            text-align:center;
+            top: 40%;
+            left:50%;
+            margin: -150px 0 0 -150px;
+            width: 300px;
+            height: 300px;
+        }
+        #login h1{
+            color: #fff;
+            text-shadow:0 0 10px;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        h1{
+            font-size: 2em;
+            margin: 0.67em 0;
+        }
+        input{
+            width: 275px;
+            margin-bottom: 10px;
+            outline: none;
+            padding: 10px;
+            font-size: 13px;
+            color: #fff;
+            text-shadow:1px 1px 1px;
+            border-top: 1px solid #312E3D;
+            border-left: 1px solid #312E3D;
+            border-right: 1px solid #312E3D;
+            border-bottom: 1px solid #56536A;
+            border-radius: 4px;
+            background-color: #2D2D3F;
+        }
+    </style>
+</head>
+<body>
+<div id="login">
+    <h1>明日方舟一键签到</h1>
+    <form action="checkin.php" method="post">
+        <h3>账号密码登录:</h3>
+        <input type="text" oninput = "value=value.replace(/[^\d]/g,'')" placeholder="账号" name="account">
+        <input type="password" placeholder="密码" name="password"/>
+        <h3>auth登录:</h3>
+        <input type="text" placeholder="Access Token" name="access_token"/>
+        <br><br>
+        <input type="text" placeholder="活动签到id(为空不签到)" name="activity_id"/>
+        <input type="submit" value="一键签到" id="checkin" align="middle">
+    </form>
+</div>
+</body>
+</html>
