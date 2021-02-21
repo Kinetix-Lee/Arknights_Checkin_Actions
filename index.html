@@ -17,9 +17,6 @@
             margin: 0;
             background-color: #295d82;
         }
-        #checkin{
-            width: 100px;
-        }
         #login{
             position: absolute;
             text-align:center;
@@ -54,6 +51,19 @@
             border-radius: 4px;
             background-color: #2D2D3F;
         }
+        .but{
+            width: 300px;
+            min-height: 20px;
+            display: block;
+            background-color: #4a77d4;
+            border: 1px solid #3762bc;
+            color: #fff;
+            padding: 9px 14px;
+            font-size: 15px;
+            line-height: normal;
+            border-radius: 5px;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -67,7 +77,7 @@
         <input type="text" placeholder="Access Token" name="access_token"/>
         <br><br>
         <input type="text" placeholder="活动签到id(为空不签到)" name="activity_id"/>
-        <input type="submit" value="一键签到" id="checkin" align="middle">
+        <input class="but" type="submit" value="一键签到" id="checkin">
     </form>
 </div>
 </body>
