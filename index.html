@@ -20,7 +20,7 @@
         #login{
             position: absolute;
             text-align:center;
-            top: 40%;
+            top: 35%;
             left:50%;
             margin: -150px 0 0 -150px;
             width: 300px;
@@ -73,11 +73,12 @@
         <h3>账号密码登录:</h3>
         <input type="text" oninput = "value=value.replace(/[^\d]/g,'')" placeholder="账号" name="account">
         <input type="password" placeholder="密码" name="password"/>
-        <h3>auth登录:</h3>
+        <h3>Auth登录:</h3>
         <input type="text" placeholder="Access Token" name="access_token"/>
         <br><br>
         <input type="text" placeholder="活动签到id(为空不签到)" name="activity_id"/>
         <input class="but" type="submit" value="一键签到" id="checkin">
+        <font size="1">注:一键签到会自动使用多余的信赖值并且自动设置基建房间入驻干员。<br>为了保证账号安全，建议使用Auth登录。<br><br>Access Token理论上永久有效、不限设备和ip；<br>但在一次账号密码登录后，Access Token将会更新。</font>
     </form>
 </div>
 </body>

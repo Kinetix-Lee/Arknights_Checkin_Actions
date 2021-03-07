@@ -52,11 +52,19 @@ class Player {
     var $login_time = 0; // syncData返回的服务器时间, 副本战斗日志加密时使用
     var $time_diff = 0; // 服务器与本地时间差
     var $can_checkin = true; // 是否可以签到
+    var $social_point = 0; // 信用数
     var $can_receive_social_point = true; // 是否领取信用
     var $building_on = true; // 基建是否解锁
     var $activity_checkin_history = array(); // 活动签到历史
-    var $manufacture_room_slot_id = array(); // 制造站
-    var $trade_room_slot_id = array(); // 贸易站
+    var $manufacture_room_slot = array(); // 制造站
+    var $trade_room_slot = array(); // 贸易站
+    var $control_room_slot = array(); // 控制中心
+    var $dormitory_room_slot = array(); // 宿舍
+    var $power_room_slot = array(); // 发电站
+    var $meeting_room_slot = array(); // 会客室
+    var $hire_room_slot = array(); // 办公室
+    var $free_chars_list=array(); // 空闲干员
+    var $lowAp_chars_list=array(); // 低理智干员
 
     function get_device_id(){return $this->device_id;}
     function get_device_id2(){return $this->device_id2;}
@@ -85,16 +93,33 @@ class Player {
     function set_time_diff($server_time){$this->time_diff=$server_time-time();}
     function get_can_checkin(){return $this->can_checkin;}
     function set_can_checkin($can_checkin){$this->can_checkin=$can_checkin;}
+    function get_social_point(){return $this->social_point;}
+    function set_social_point($social_point){$this->social_point=$social_point;}
     function get_can_receive_social_point(){return $this->can_receive_social_point;}
     function set_can_receive_social_point($can_receive_social_point){$this->can_receive_social_point=$can_receive_social_point;}
     function get_building_on(){return $this->building_on;}
     function set_building_on($building_on){$this->building_on=$building_on;}
     function get_activity_checkin_history(){return $this->activity_checkin_history;}
     function set_activity_checkin_history($history){$this->activity_checkin_history=$history;}
-    function get_manufacture_room_slot_id(){return $this->manufacture_room_slot_id;}
-    function set_manufacture_room_slot_id($room_slot_id){$this->manufacture_room_slot_id=$room_slot_id;}
-    function get_trade_room_slot_id(){return $this->trade_room_slot_id;}
-    function set_trade_room_slot_id($room_slot_id){$this->trade_room_slot_id=$room_slot_id;}
+    function get_manufacture_room_slot(){return $this->manufacture_room_slot;}
+    function set_manufacture_room_slot($room_slot){$this->manufacture_room_slot=$room_slot;}
+    function get_trade_room_slot(){return $this->trade_room_slot;}
+    function set_trade_room_slot($room_slot){$this->trade_room_slot=$room_slot;}
+    function get_control_room_slot(){return $this->control_room_slot;}
+    function set_control_room_slot($room_slot){$this->control_room_slot=$room_slot;}
+    function get_dormitory_room_slot(){return $this->dormitory_room_slot;}
+    function set_dormitory_room_slot($room_slot){$this->dormitory_room_slot=$room_slot;}
+    function get_power_room_slot(){return $this->power_room_slot;}
+    function set_power_room_slot($room_slot){$this->power_room_slot=$room_slot;}
+    function get_meeting_room_slot(){return $this->meeting_room_slot;}
+    function set_meeting_room_slot($room_slot){$this->meeting_room_slot=$room_slot;}
+    function get_hire_room_slot(){return $this->hire_room_slot;}
+    function set_hire_room_slot($room_slot){$this->hire_room_slot=$room_slot;}
+    function get_free_chars_list(){return $this->free_chars_list;}
+    function set_free_chars_list($free_chars_list){$this->free_chars_list=$free_chars_list;}
+    function get_lowAp_chars_list(){return $this->lowAp_chars_list;}
+    function set_lowAp_chars_list($lowAp_chars_list){$this->lowAp_chars_list=$lowAp_chars_list;}
+
 
     function init($device_id, $device_id2 = '', $device_id3 = '', $access_token = ''){
         $this->device_id=$device_id;
@@ -148,7 +173,7 @@ function play_login($player){
     sync_status($player, $GLOBALS['MODULES']);
     usleep(100000);
     // 获取未完成订单
-    get_unconfirmed_orderid_list($player);
+   get_unconfirmed_orderid_list($player);
     usleep(500000);
 
     // 每日签到
@@ -167,7 +192,7 @@ function play_login($player){
     // 领取邮件|维护补偿
     $mail_list=get_meta_info_list($player);
     foreach($mail_list as $mail){
-        recieve_mail($player,$mail->mailId,$mail->type);
+        recieve_mail($player,$mail['mailId'],$mail['type']);
         usleep(300000);
     }
 
@@ -186,6 +211,12 @@ function play_login($player){
         usleep(100000);
         // 获取基建干员信赖
         gain_all_intimacy($player);
+        // 同步信用
+        sync_social_point($player);
+        // 自动兑换信用
+        auto_buy_social_good($player);
+        // 自动按照理智设置基建助理干员
+        auto_set_assign_char($player);
     }else{
         report_normal("基建未解锁");
     }
@@ -202,7 +233,7 @@ function updata_config(){
 
 // 同步账号数据
 function sync_data($player){
-    $data = json_encode(array('platform'=>1));
+    $data = json_encode(array('platform'=>$GLOBALS['PLATFORM']));
     $res=post_to_gs('/account/syncData',$data,$player);
     if ($res=='error'){
         report_error("活动签到错误: 连接错误");
@@ -242,22 +273,54 @@ function sync_building($player){
     if ($res=='error'){
         report_error("基建数据同步失败: 连接错误");
     }else{
-        $manufacture_room_slot_id_list=array();
-        $trade_room_slot_id_list=array();
+        $manufacture_room_slot_list=array();
+        $trade_room_slot_list=array();
+        $control_room_slot_list=array();
+        $dormitory_room_slot_list=array();
+        $power_room_slot_list=array();
+        $hire_room_slot_list=array();
+        $meeting_room_slot_list=array();
         $j=json_decode($res);
         $j_rooms=$j->playerDataDelta->modified->building->rooms;
-        if (array_key_exists('MANUFACTURE',$j_rooms) and array_key_exists('TRADING',$j_rooms)){
-            foreach($j_rooms->MANUFACTURE as $key => $value){
-                array_push($manufacture_room_slot_id_list,$key);
+        $j_room_slots=$j->playerDataDelta->modified->building->roomSlots;
+        if (array_key_exists('MANUFACTURE',$j_rooms) and array_key_exists('TRADING',$j_rooms) and array_key_exists('CONTROL',$j_rooms) and array_key_exists('DORMITORY',$j_rooms) and array_key_exists('HIRE',$j_rooms) and array_key_exists('POWER',$j_rooms)){
+            foreach ($j_room_slots as $slot_id => $room){
+                if ($room->roomId=='MANUFACTURE'){
+                    array_push($manufacture_room_slot_list, array('count'=>count($room->charInstIds),'slot_id'=>$slot_id));
+                }else if($room->roomId=='TRADING'){
+                    array_push($trade_room_slot_list, array('count'=>count($room->charInstIds),'slot_id'=>$slot_id));
+                }else if($room->roomId=='CONTROL'){
+                    array_push($control_room_slot_list, array('count'=>count($room->charInstIds),'slot_id'=>$slot_id));
+                }else if($room->roomId=='DORMITORY'){
+                    array_push($dormitory_room_slot_list, array('count'=>count($room->charInstIds),'slot_id'=>$slot_id));
+                }else if($room->roomId=='POWER'){
+                    array_push($power_room_slot_list, array('count'=>count($room->charInstIds),'slot_id'=>$slot_id));
+                }else if($room->roomId=='HIRE') {
+                    array_push($hire_room_slot_list, array('count'=>count($room->charInstIds),'slot_id'=>$slot_id));
+                }else if($room->roomId=='MEETING') {
+                    array_push($meeting_room_slot_list, array('count'=>count($room->charInstIds),'slot_id'=>$slot_id));
+                }
             }
-            foreach($j_rooms->TRADING as $key => $value){
-                array_push($trade_room_slot_id_list,$key);
+            $free_chars_list=array();
+            $lowAp_chars_list=array();
+            foreach($j->playerDataDelta->modified->building->chars as $index => $char){
+                array_push($free_chars_list,array('index'=>(int)$index,'ap'=>$char->ap));
+                array_push($lowAp_chars_list,array('index'=>(int)$index,'ap'=>$char->ap));
             }
+            array_multisort(array_column($free_chars_list,'ap'),SORT_DESC,$free_chars_list);
+            array_multisort(array_column($lowAp_chars_list,'ap'),SORT_ASC,$lowAp_chars_list);
+            $player->set_free_chars_list($free_chars_list);
+            $player->set_lowAp_chars_list($lowAp_chars_list);
         }else{
             $player->set_building_on(false);
         }
-        $player->set_manufacture_room_slot_id($manufacture_room_slot_id_list);
-        $player->set_trade_room_slot_id($trade_room_slot_id_list);
+        $player->set_manufacture_room_slot($manufacture_room_slot_list);
+        $player->set_trade_room_slot($trade_room_slot_list);
+        $player->set_control_room_slot($control_room_slot_list);
+        $player->set_dormitory_room_slot($dormitory_room_slot_list);
+        $player->set_power_room_slot($power_room_slot_list);
+        $player->set_hire_room_slot($hire_room_slot_list);
+        $player->set_meeting_room_slot($meeting_room_slot_list);
         report_normal("基建数据同步成功: uid:{$player->get_uid()}");
     }
 }
@@ -276,7 +339,7 @@ function user_login($player){
     }else{
         $j=json_decode($res);
         if ($j->result){
-            report_error("账号密码登录失败: data={$data}, err_code={$j->result}");
+            report_error("账号密码登录失败: data={$data}, err_data={$res}");
             return;
         }
         $player->set_channel_uid($j->uid);
@@ -294,7 +357,7 @@ function auth_login($player){
     }else{
         $j=json_decode($res);
         if (array_key_exists('error',$j)){
-            report_error("auth登录失败: data={$data}, err_code={$res}");
+            report_error("auth登录失败: data={$data}, err_data={$res}");
             return;
         }
         $player->set_channel_uid($j->uid);
@@ -327,7 +390,7 @@ function get_token($player){
     }else{
         $j=json_decode($res);
         if ($j->result){
-            report_error("获取token失败: data={$data}, err_code={$j->result}");
+            report_error("获取token失败: data={$data}, err_data={$res}");
             return;
         }
         $player->set_uid($j->uid);
@@ -362,7 +425,7 @@ function game_login($player){
     }else{
         $j=json_decode($res);
         if ($j->result){
-            report_error("登录失败: data={$data}, err_code={$j->result}");
+            report_error("登录失败: data={$data}, err_data={$res}");
             return;
         }
         $player->set_secret($j->secret);
@@ -373,7 +436,7 @@ function game_login($player){
 
 // 获取未完成订单
 function get_unconfirmed_orderid_list($player){
-    $res=post_to_gs('/account/syncData',"{}",$player);
+    $res=post_to_gs('/pay/getUnconfirmedOrderIdList',"{}",$player);
     if ($res=='error'){
         report_error("获取未完成订单失败: 连接错误");
     }else{
@@ -395,7 +458,7 @@ function get_meta_info_list($player){
                 if ($mail->hasItem) $has_item=true;
             }
         }
-        $length=count($unread_mail_list);
+        $length=(string)count($unread_mail_list);
         $has_item_string=$has_item?'是':'否';
         report_normal("成功获取邮件列表: uid:{$player->get_uid()}, 未读邮件数:{$length}, 是否有物品:{$has_item_string}");
     }
@@ -432,7 +495,11 @@ function activity_checkin($player, $activity_id, $index){
 }
 // 收取制造站产物
 function settle_manufacture($player){
-    $data = json_encode(array('roomSlotIdList'=>$player->get_manufacture_room_slot_id(),'supplement'=>1));
+    $room_slot_id_list=array();
+    foreach($player->get_manufacture_room_slot() as $room){
+        array_push($room_slot_id_list,$room['slot_id']);
+    }
+    $data = json_encode(array('roomSlotIdList'=>$room_slot_id_list,'supplement'=>1));
     $res=post_to_gs('/building/settleManufacture',$data,$player);
     if ($res=='error'){
         report_error("收取制造站产物失败: 连接错误");
@@ -442,7 +509,11 @@ function settle_manufacture($player){
 }
 // 结算贸易站订单
 function delivery_batch_order($player){
-    $data = json_encode(array('slotList'=>$player->get_trade_room_slot_id()));
+    $room_slot_id_list=array();
+    foreach($player->get_trade_room_slot() as $room){
+        array_push($room_slot_id_list,$room['slot_id']);
+    }
+    $data = json_encode(array('slotList'=>$room_slot_id_list));
     $res=post_to_gs('/building/deliveryBatchOrder',$data,$player);
     if ($res=='error'){
         report_error("结算贸易站订单失败: 连接错误");
@@ -485,7 +556,95 @@ function receive_social_point($player){
         report_normal("领取信用完成: uid:{$player->get_uid()}, 获得信用数: {$social_number}");
     }
 }
+// 同步信用
+function sync_social_point($player){
+    $data = json_encode(array('platform'=>$GLOBALS['PLATFORM']));
+    $res=post_to_gs('/account/syncData',$data,$player);
+    if ($res=='error'){
+        report_error("同步信用错误: 连接错误");
+    }else{
+        $j=json_decode($res);
+        $player->set_social_point($j->user->status->socialPoint);
+        report_normal("同步信用成功: uid:{$player->get_uid()}, 信用数:{$j->user->status->socialPoint}");
+    }
+}
+// 自动兑换信用
+function auto_buy_social_good($player){
+    $res=post_to_gs('/shop/getSocialGoodList',"{}",$player);
+    if ($res=='error'){
+        report_error("自动消耗多余信用失败: 连接错误");
+    }else{
+        $j=json_decode($res);
+        $good_list=array();
+        $social_point=$player->get_social_point();
+        $inform="";
+        foreach($j->goodList as $good){
+            array_push($good_list,array('name'=>$good->displayName,'price'=>$good->price,'count'=>$good->item->count,'goodId'=>$good->goodId));
+        }
+        foreach ($good_list as $good){
+            if ($social_point <=300) break;
+            if (buy_social_good($player,$good['goodId'])=='error') continue;
+            $social_point-=$good['price'];
+            $inform.="{$good['name']}共{$good['count']}个 ";
+            usleep(300000);
+        }
+        report_normal("自动消耗多余信用完成: uid:{$player->get_uid()}, 获得物品: {$inform}");
+    }
+}
+// 购买信用商品
+function buy_social_good($player,$goodId){
+    $res=post_to_gs('/shop/buySocialGood',"{\"goodId\":\"{$goodId}\",\"count\":1}",$player);
+    if ($res=='error'){
+        report_error("自动消耗多余信用失败: 连接错误");
+    }else{
+        $j=json_decode($res);
+        if (array_key_exists('error',$j) and array_key_exists('code',$j)){
+            report_normal("购买信用商品失败: goodId={$goodId}, err_data={$res}");
+            return 'error';
+        }
+    }
+}
 
+// 自动按照理智设置基建助理干员
+function auto_set_assign_char($player){
+    $lowAp_chars_list=array();
+    $free_chars_list=array();
+    foreach ($player->get_lowAp_chars_list() as $list){array_push($lowAp_chars_list,$list['index']);}
+    foreach ($player->get_free_chars_list() as $list){array_push($free_chars_list,$list['index']);}
+    $lowAp_chars_list = fill_room_with_chars($player,$player->get_dormitory_room_slot(),$lowAp_chars_list);
+    $free_chars_list = fill_room_with_chars($player,$player->get_manufacture_room_slot(),$free_chars_list);
+    $free_chars_list = fill_room_with_chars($player,$player->get_trade_room_slot(),$free_chars_list);
+    $free_chars_list = fill_room_with_chars($player,$player->get_control_room_slot(),$free_chars_list);
+    $free_chars_list = fill_room_with_chars($player,$player->get_power_room_slot(),$free_chars_list);
+    $free_chars_list = fill_room_with_chars($player,$player->get_hire_room_slot(),$free_chars_list);
+    $free_chars_list = fill_room_with_chars($player,$player->get_meeting_room_slot(),$free_chars_list);
+}
+function fill_room_with_chars($player,$room_list,$chars_list){
+    foreach ($room_list as $room){
+        if (count($chars_list)==0) return $chars_list;
+        if (count($chars_list)<$room['count']){
+            $list=$chars_list;
+            for ($i=1;$i<=$room['count']-count($chars_list);$i++){
+                array_push($list,-1);
+            }
+            set_assign_char($player,$list,$room['slot_id']);
+        }else {
+            $count=$room['count'];
+            set_assign_char($player,array_slice($chars_list,0,$count),$room['slot_id']);
+            array_splice($chars_list,0,$count);
+        }
+        usleep(300000);
+    }
+    return $chars_list;
+}
+// 设置基建助理干员
+function set_assign_char($player,$char_list,$room_slot){
+    $data = json_encode(array('charInstIdList'=>$char_list,'roomSlotId'=>$room_slot));
+    $res=post_to_gs('/building/assignChar',$data,$player);
+    if ($res=='error'){
+        report_error("设置基建助理干员失败: 连接错误");
+    }
+}
 function get_from_conf($cgi,$retry=3, $sleep = 1){
     $curl = curl_init();
     curl_setopt_array($curl, array(
