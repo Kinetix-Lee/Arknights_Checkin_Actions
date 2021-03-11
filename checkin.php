@@ -3,12 +3,23 @@
 <head>
     <title>明日方舟签到-控制台</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-    <style>body{background-color: #295d82;}div{ display:inline}</style>
+    <style>
+	body{background-color: #295d82;}div{ display:inline}
+	console {
+		background: #000;
+		border: 3px groove #ccc;
+		color: #ccc;
+		display: block;
+		padding: 10px;
+		width: 1000px;
+		overflow:hidden;
+		height: 500px;
+	}
+	</style>
 </head>
 <body>
-<div id="return_btn" onclick="window.location.href='./index.html'"><img src="back.png"/></div><font size="6"> 控制台</font><br><br>
-</body>
-</html>
+<div id="return_btn" onclick="window.location.href='./index.html'"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABmUlEQVRYR9XXv0tWURjA8Y+7hHPSP1C4NSVCTQ3RoFJGRg1FQwUtUWBukeTgojY0FIIUBA4hirVUULRoWz+gLWppqmiqSR44QuSP933PubeLd3qXy/dzD+89z7ldGr66Gu7b1YAe7MWHklXMXYF9WEYfjuBlLiIHsAdLGMATDObG474cwCKO4zmG8PN/AuZxBmsp/qUk3ukKzOAKPuIk3pXGOwHcwjjiiU/hTRXxdgE3cAffMYqVquLtAC5jFn9wFo+rjLcCnMNcCp7Hg6rjOwGGsZCCVzFdR3w7wFE8TcGbmKgrvhXgMF7UGFxN+8injca/O+F+vG8SEO1u/EqIePdv1wjadhb04msKX8NUXYidhtGBv7bb2ILv1oFoNQ378TqFL+B+1YhWgOgdS/M/fsdW/KhKRDuA6J3GQ/xOwygOIpVc7QIidin9D+IAMoJnVQg6AURvLL2W33ACr0oRnQKiN4nr+IyYGW9LEDmA6N3DxXQ6OoQfuYhcQPTibBBHs4Mlq1ACCETMjkY+THJXfNN9pStQDGkcsA62IT8hfd8dBAAAAABJRU5ErkJggg=="/></div><font size="6"> 控制台</font><br><br>
+<console>
 <?php
 $HMAC_KEY = '91240f70c09a08a6bc72af1a5c8d4670';
 
@@ -137,7 +148,10 @@ if (empty($_POST['access_token'])){
         report_error('错误: 账号或密码不能为空');
     }
 }
-if (!empty($_POST['activity_id'])) $GLOBALS['CHECKIN_ACTIVITY_ID']=$_POST['activity_id'];
+if (!empty($_POST['activity_id'])){
+	$GLOBALS['CHECKIN_ACTIVITY_ID']=$_POST['activity_id'];
+	$GLOBALS['CHECKIN_ACTIVITY_ON']=true;
+}
 updata_config();
 $player=new Player();
 $player->init(get_random_device_id());
@@ -159,35 +173,39 @@ function play_login($player){
         user_login($player);
     }
     sleep(1);
-
+	ob_implicit_flush(true);
+	ob_end_flush();
     // 获取token
     get_token($player);
-    usleep(100000);
+    usleep(10000);
     // 登录游戏服务器
     game_login($player);
-    usleep(100000);
+    usleep(10000);
     // 同步账号数据
     sync_data($player);
-    usleep(100000);
+    usleep(10000);
     // 更新在线状态
     sync_status($player, $GLOBALS['MODULES']);
-    usleep(100000);
+    usleep(10000);
     // 获取未完成订单
    get_unconfirmed_orderid_list($player);
-    usleep(500000);
+    usleep(50000);
 
     // 每日签到
     if ($player->get_can_checkin()) checkin($player);
     usleep(100000);
     // 活动签到
+	$flag=false;
     if ($GLOBALS['CHECKIN_ACTIVITY_ON']){
         $history=$player->get_activity_checkin_history();
         for ($i=0;$i<count($history);$i++){
             if ($history[$i]){
-                activity_checkin($player,$GLOBALS['CHECKIN_ACTIVITY_ON'],$i);
+                activity_checkin($player,$GLOBALS['CHECKIN_ACTIVITY_ID'],$i);
+				$flag=true;
             }
         }
     }
+	if(!$flag)report_normal("今日活动已签到.");
     usleep(100000);
     // 领取邮件|维护补偿
     $mail_list=get_meta_info_list($player);
@@ -220,6 +238,7 @@ function play_login($player){
     }else{
         report_normal("基建未解锁");
     }
+	report_normal("All Done.");
 }
 
 // 功能函数声明:
@@ -242,10 +261,11 @@ function sync_data($player){
         $player->set_can_checkin($j->user->checkIn->canCheckIn?true:false);
         $player->set_can_receive_social_point($j->user->social->yesterdayReward->canReceive?true:false);
         if ($GLOBALS['CHECKIN_ACTIVITY_ON']){
-            if (array_key_exists($GLOBALS['CHECKIN_ACTIVITY_ID'],$j->user->activity->CHECKIN_ONLY)){
-                report_error("活动签到错误: activity_id不存在");
+            if (!array_key_exists($GLOBALS['CHECKIN_ACTIVITY_ID'],$j->user->activity->CHECKIN_ONLY)){
+				echo "当前可用id:".json_encode($j->user->activity->CHECKIN_ONLY)."<br>";
+				report_error("活动签到错误: activity_id不存在");
             } else{
-                $player->set_activity_checkin_history($j->user->activity->CHECKIN_ONLY->$GLOBALS['CHECKIN_ACTIVITY_ID']->history);
+                $player->set_activity_checkin_history($j->user->activity->CHECKIN_ONLY->{$GLOBALS['CHECKIN_ACTIVITY_ID']}->history);
             }
         }
         // 本地时间校正
@@ -607,6 +627,7 @@ function buy_social_good($player,$goodId){
 
 // 自动按照理智设置基建助理干员
 function auto_set_assign_char($player){
+	report_normal("正在自动设置基建干员...");
     $lowAp_chars_list=array();
     $free_chars_list=array();
     foreach ($player->get_lowAp_chars_list() as $list){array_push($lowAp_chars_list,$list['index']);}
@@ -756,3 +777,6 @@ function get_random_digits($length){
     return $str;
 }
 ?>
+</console>
+</body>
+</html>
