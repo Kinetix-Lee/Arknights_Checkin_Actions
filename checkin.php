@@ -195,8 +195,8 @@ function play_login($player){
     if ($player->get_can_checkin()) checkin($player);
     usleep(100000);
     // 活动签到
-	$flag=false;
     if ($GLOBALS['CHECKIN_ACTIVITY_ON']){
+		$flag=false;
         $history=$player->get_activity_checkin_history();
         for ($i=0;$i<count($history);$i++){
             if ($history[$i]){
@@ -204,8 +204,8 @@ function play_login($player){
 				$flag=true;
             }
         }
+		if(!$flag)report_normal("<font color=\"#FFA500\">今日活动已签到.</font>");
     }
-	if(!$flag)report_normal("今日活动已签到.");
     usleep(100000);
     // 领取邮件|维护补偿
     $mail_list=get_meta_info_list($player);
@@ -236,9 +236,9 @@ function play_login($player){
         // 自动按照理智设置基建助理干员
         auto_set_assign_char($player);
     }else{
-        report_normal("基建未解锁");
+        report_normal("<font color=\"#FFA500\">基建未解锁</font>");
     }
-	report_normal("All Done.");
+	report_normal("<font color=\"#90EE90\">All Done.</font>");
 }
 
 // 功能函数声明:
@@ -262,18 +262,20 @@ function sync_data($player){
         $player->set_can_receive_social_point($j->user->social->yesterdayReward->canReceive?true:false);
         if ($GLOBALS['CHECKIN_ACTIVITY_ON']){
             if (!array_key_exists($GLOBALS['CHECKIN_ACTIVITY_ID'],$j->user->activity->CHECKIN_ONLY)){
-				echo "当前可用id:".json_encode($j->user->activity->CHECKIN_ONLY)."<br>";
+				report_normal("当前可用id:".json_encode($j->user->activity->CHECKIN_ONLY));
 				report_error("活动签到错误: activity_id不存在");
             } else{
                 $player->set_activity_checkin_history($j->user->activity->CHECKIN_ONLY->{$GLOBALS['CHECKIN_ACTIVITY_ID']}->history);
             }
-        }
+        } else{
+			report_normal("<font color=\"#FFA500\">未启用活动签到</font>,当前可用id:".json_encode($j->user->activity->CHECKIN_ONLY));
+		}
         // 本地时间校正
         $player->set_time_diff($j->ts);
         // 记录玩家上线时间
         $player->set_login_time($j->user->event->status);
-        report_normal("数据同步成功: uid:{$player->get_uid()}, 服务器时间:{$j->ts}");
-        report_normal("登陆时间戳已保存: uid:{$player->get_uid()}, login_time:{$player->get_login_time()}");
+        report_normal("<font color=\"#90EE90\">数据同步成功:</font> uid:{$player->get_uid()}, 服务器时间:{$j->ts}");
+        report_normal("<font color=\"#90EE90\">登陆时间戳已保存:</font> uid:{$player->get_uid()}, login_time:{$player->get_login_time()}");
     }
 }
 // 更新在线状态
@@ -284,7 +286,7 @@ function sync_status($player, $modules){
         report_error("状态同步失败: 连接错误");
     }else{
         $j=json_decode($res);
-        report_normal("状态同步成功: uid:{$player->get_uid()}, 更新账号上线时间:{$j->ts}");
+        report_normal("<font color=\"#90EE90\">状态同步成功:</font> uid:{$player->get_uid()}, 更新账号上线时间:{$j->ts}");
     }
 }
 // 同步基建数据
@@ -341,7 +343,7 @@ function sync_building($player){
         $player->set_power_room_slot($power_room_slot_list);
         $player->set_hire_room_slot($hire_room_slot_list);
         $player->set_meeting_room_slot($meeting_room_slot_list);
-        report_normal("基建数据同步成功: uid:{$player->get_uid()}");
+        report_normal("<font color=\"#90EE90\">基建数据同步成功:</font> uid:{$player->get_uid()}");
     }
 }
 
@@ -364,7 +366,7 @@ function user_login($player){
         }
         $player->set_channel_uid($j->uid);
         $player->set_access_token($j->token);
-        report_normal("账号密码登录成功: 账号:{$player->get_account()}, 密码:{$player->get_password()}, deviceId:{$player->get_device_id()}, channel_uid:{$j->uid}, access_token:{$j->token}");
+        report_normal("<font color=\"#90EE90\">账号密码登录成功:</font> 账号:{$player->get_account()}, 密码:{$player->get_password()}, deviceId:{$player->get_device_id()}, channel_uid:{$j->uid}, access_token:{$j->token}");
     }
 }
 // auth登录
@@ -381,7 +383,7 @@ function auth_login($player){
             return;
         }
         $player->set_channel_uid($j->uid);
-        report_normal("auth登录成功: channel_uid:{$j->uid}");
+        report_normal("<font color=\"#90EE90\">auth登录成功:</font> channel_uid:{$j->uid}");
     }
 }
 // 获取token
@@ -415,7 +417,7 @@ function get_token($player){
         }
         $player->set_uid($j->uid);
         $player->set_token($j->token);
-        report_normal("获取token成功: uid:{$j->uid}, channel_uid:{$j->channelUid}, token:{$j->token}");
+        report_normal("<font color=\"#90EE90\">获取token成功:</font> uid:{$j->uid}, channel_uid:{$j->channelUid}, token:{$j->token}");
     }
 }
 // 登录游戏服务器
@@ -449,7 +451,7 @@ function game_login($player){
             return;
         }
         $player->set_secret($j->secret);
-        report_normal("登录成功: uid={$player->get_uid()}, secret={$j->secret}");
+        report_normal("<font color=\"#90EE90\">登录成功:</font> uid={$player->get_uid()}, secret={$j->secret}");
     }
 }
 
@@ -460,7 +462,7 @@ function get_unconfirmed_orderid_list($player){
     if ($res=='error'){
         report_error("获取未完成订单失败: 连接错误");
     }else{
-        report_normal("获取未完成订单成功: uid:{$player->get_uid()}");
+        report_normal("<font color=\"#90EE90\">获取未完成订单成功:</font> uid:{$player->get_uid()}");
     }
 }
 // 查询邮件(返回未读邮件id/type列表)
@@ -480,7 +482,7 @@ function get_meta_info_list($player){
         }
         $length=(string)count($unread_mail_list);
         $has_item_string=$has_item?'是':'否';
-        report_normal("成功获取邮件列表: uid:{$player->get_uid()}, 未读邮件数:{$length}, 是否有物品:{$has_item_string}");
+        report_normal("<font color=\"#90EE90\">成功获取邮件列表:</font> uid:{$player->get_uid()}, 未读邮件数:{$length}, 是否有物品:{$has_item_string}");
     }
     return $unread_mail_list;
 }
@@ -491,7 +493,7 @@ function recieve_mail($player, $mail_id, $mail_type){
     if ($res=='error'){
         report_error("邮件收取失败: 连接错误");
     }else{
-        report_normal("邮件收取成功: uid:{$player->get_uid()}, 邮件id:{$mail_id}");
+        report_normal("<font color=\"#90EE90\">邮件收取成功:</font> uid:{$player->get_uid()}, 邮件id:{$mail_id}");
     }
 }
 // 每日签到
@@ -500,7 +502,7 @@ function checkin($player){
     if ($res=='error'){
         report_error("每日签到失败: 连接错误");
     }else{
-        report_normal("每日签到完成: uid:{$player->get_uid()}");
+        report_normal("<font color=\"#90EE90\">每日签到完成:</font> uid:{$player->get_uid()}");
     }
 }
 // 活动签到
@@ -510,7 +512,7 @@ function activity_checkin($player, $activity_id, $index){
     if ($res=='error'){
         report_error("活动签到失败: 连接错误");
     }else{
-        report_normal("活动签到完成: uid:{$player->get_uid()}, 活动id:{$activity_id}, 当前签到次数:{$index}");
+        report_normal("<font color=\"#90EE90\">活动签到完成:</font> uid:{$player->get_uid()}, 活动id:{$activity_id}, 当前签到次数:{$index}");
     }
 }
 // 收取制造站产物
@@ -524,7 +526,7 @@ function settle_manufacture($player){
     if ($res=='error'){
         report_error("收取制造站产物失败: 连接错误");
     }else{
-        report_normal("收取制造站产物完成: uid:{$player->get_uid()}");
+        report_normal("<font color=\"#90EE90\">收取制造站产物完成:</font> uid:{$player->get_uid()}");
     }
 }
 // 结算贸易站订单
@@ -547,7 +549,7 @@ function delivery_batch_order($player){
                 $item_string .= "{$item->type}共{$item->count}个";
             }
         }
-        report_normal("结算贸易站订单完成: uid:{$player->get_uid()}, 获得物品数: {$item_number}, 获得物品数据: {$item_string}");
+        report_normal("<font color=\"#90EE90\">结算贸易站订单完成:</font> uid:{$player->get_uid()}, 获得物品数: {$item_number}, 获得物品数据: {$item_string}");
     }
 }
 // 收取基建干员信赖
@@ -557,7 +559,7 @@ function gain_all_intimacy($player){
         report_error("收取基建干员信赖失败: 连接错误");
     }else{
         $j=json_decode($res);
-        report_normal("收取基建干员信赖完成: uid:{$player->get_uid()}, 共计干员数: {$j->assist}, 共计信赖数: {$j->normal}");
+        report_normal("<font color=\"#90EE90\">收取基建干员信赖完成:</font> uid:{$player->get_uid()}, 共计干员数: {$j->assist}, 共计信赖数: {$j->normal}");
     }
 }
 // 领取信用
@@ -573,7 +575,7 @@ function receive_social_point($player){
                 $social_number=$reward->count;
             }
         }
-        report_normal("领取信用完成: uid:{$player->get_uid()}, 获得信用数: {$social_number}");
+        report_normal("<font color=\"#90EE90\">领取信用完成:</font> uid:{$player->get_uid()}, 获得信用数: {$social_number}");
     }
 }
 // 同步信用
@@ -585,7 +587,7 @@ function sync_social_point($player){
     }else{
         $j=json_decode($res);
         $player->set_social_point($j->user->status->socialPoint);
-        report_normal("同步信用成功: uid:{$player->get_uid()}, 信用数:{$j->user->status->socialPoint}");
+        report_normal("<font color=\"#90EE90\">同步信用成功:</font> uid:{$player->get_uid()}, 信用数:{$j->user->status->socialPoint}");
     }
 }
 // 自动兑换信用
@@ -608,7 +610,7 @@ function auto_buy_social_good($player){
             $inform.="{$good['name']}共{$good['count']}个 ";
             usleep(300000);
         }
-        report_normal("自动消耗多余信用完成: uid:{$player->get_uid()}, 获得物品: {$inform}");
+        report_normal("<font color=\"#90EE90\">自动消耗多余信用完成:</font> uid:{$player->get_uid()}, 获得物品: {$inform}");
     }
 }
 // 购买信用商品
@@ -619,7 +621,7 @@ function buy_social_good($player,$goodId){
     }else{
         $j=json_decode($res);
         if (array_key_exists('error',$j) and array_key_exists('code',$j)){
-            report_normal("购买信用商品失败: goodId={$goodId}, err_data={$res}");
+            report_normal("<font color=\"red\">购买信用商品失败:</font> goodId={$goodId}, err_data={$res}");
             return 'error';
         }
     }
