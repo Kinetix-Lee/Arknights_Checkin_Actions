@@ -1,85 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cmn-Hans">
 <head>
-    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-    <meta charset="UTF-8">
-    <title>明日方舟签到</title>
-    <!--CSS from https://www.jb51.net/web/458871.html-->
-    <style>
-        html{
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-        body{
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            background-color: #295d82;
-        }
-        #login{
-            position: absolute;
-            text-align:center;
-            top: 35%;
-            left:50%;
-            margin: -150px 0 0 -150px;
-            width: 300px;
-            height: 300px;
-        }
-        #login h1{
-            color: #fff;
-            text-shadow:0 0 10px;
-            letter-spacing: 1px;
-            text-align: center;
-        }
-        h1{
-            font-size: 2em;
-            margin: 0.67em 0;
-        }
-        input{
-            width: 275px;
-            margin-bottom: 10px;
-            outline: none;
-            padding: 10px;
-            font-size: 13px;
-            color: #fff;
-            text-shadow:1px 1px 1px;
-            border-top: 1px solid #312E3D;
-            border-left: 1px solid #312E3D;
-            border-right: 1px solid #312E3D;
-            border-bottom: 1px solid #56536A;
-            border-radius: 4px;
-            background-color: #2D2D3F;
-        }
-        .but{
-            width: 300px;
-            min-height: 20px;
-            display: block;
-            background-color: #4a77d4;
-            border: 1px solid #3762bc;
-            color: #fff;
-            padding: 9px 14px;
-            font-size: 15px;
-            line-height: normal;
-            border-radius: 5px;
-            margin: 0;
-        }
-    </style>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Arknights</title>
+	<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/YunYouJun/ak-ui@gh-pages/css/ak-ui.min.css"
+	/>
+	<meta name="keywords" content="Arknights">
+	<meta name="description" content="Arknights Simulator" />
+	<style>
+	body{background:#000;text-align:center}
+	#login{
+		position: absolute;
+		text-align:center;
+		top: 40%;
+		left:50%;
+		margin: -150px 0 0 -150px;
+		width: 300px;
+		height: 300px;
+		display: none;
+    }
+	#login h3{
+		color: #fff;
+		text-shadow:0 0 10px;
+		letter-spacing: 1px;
+		text-align: center;
+	}
+    input{
+		width: 275px;
+		margin-bottom: 10px;
+		outline: none;
+		padding: 10px;
+		font-size: 13px;
+		color: #fff;
+		text-shadow:1px 1px 1px;
+		border-top: 1px solid #312E3D;
+		border-left: 1px solid #312E3D;
+		border-right: 1px solid #312E3D;
+		border-bottom: 1px solid #56536A;
+		border-radius: 4px;
+		background-color: #2D2D3F;
+	}
+	</style>
+	<script src="https://cdn.jsdelivr.net/jquery/2.0.0/jquery-2.0.0.min.js"></script>
+	<script>
+	function showLogin(){
+		var loginForm = document.getElementById("login");
+		loginForm.style.display = 'block'
+		var coverOrigin = document.getElementById("cover");
+		coverOrigin.style.display = 'none'
+	}
+	function playAudio(){
+		var audio = document.getElementById('sys_opening');
+		if(audio.paused) {
+			audio.play();
+		}
+	}
+</script>
 </head>
-<body>
-<div id="login">
-    <h1>明日方舟一键签到</h1>
-    <form action="checkin.php" method="post">
-        <h3>账号密码登录:</h3>
-        <input type="text" oninput = "value=value.replace(/[^\d]/g,'')" placeholder="账号" name="account">
-        <input type="password" placeholder="密码" name="password"/>
-        <h3>Auth登录:</h3>
-        <input type="text" placeholder="Access Token" name="access_token"/>
-        <br><br>
-        <input type="text" placeholder="活动签到id(为空不签到)" name="activity_id"/>
-        <input class="but" type="submit" value="一键签到" id="checkin">
-        <font size="1">注:一键签到会自动使用多余的信赖值并且自动设置基建房间入驻干员。<br>为了保证账号安全，建议使用Auth登录。<br><br>Access Token理论上永久有效、不限设备和ip；<br>但在一次账号密码登录后，Access Token将会更新。</font>
-    </form>
-</div>
+<body onload="playAudio()">
+	<div id="login">
+		<h1>明日方舟一键签到</h1>
+		<form action="checkin.php" method="post">
+			<h3>账号密码登录:</h3>
+			<input type="text" oninput = "value=value.replace(/[^\d]/g,'')" placeholder="账号" name="account">
+			<input type="password" placeholder="密码" name="password"/>
+			<h3>Auth登录:</h3>
+			<input type="text" placeholder="Access Token" name="access_token"/>
+			<br><br>
+			<input type="text" placeholder="活动签到id(为空不签到)" name="activity_id"/>
+			<input class="ak-button" style="border:none" type="submit" value="开始唤醒" id="checkin"><br>
+			<font color="red" size="1">注:一键签到会自动使用多余的信赖值并且自动设置基建房间入驻干员。<br>为了保证账号安全，建议使用Auth登录。<br>活动id填写错误则会显示当前可用活动id<br>Access Token理论上永久有效、不限设备和ip；<br>但在一次账号密码登录后，Access Token将会更新。</font>
+		</form>
+	</div>
+	<div id="cover" style="position:absolute;top:200px;margin:auto;left:0;right:0;">
+		<img src="/logo.png" style="width:300px; height:300px;"/>
+		<br/><br/></br>
+		<div class="ak-button--start" style="" onclick="showLogin()">
+			<div class="icon triangle-right"></div>
+			<div class="label">START</div>
+		</div>
+	</div>
+	<audio id="sys_opening" controls="controls" autoplay="autoplay" preload id="sys_opening" hidden>
+	<source src="/m_sys_opening_loop_slice.mp3" />
+	</audio>
 </body>
 </html>
