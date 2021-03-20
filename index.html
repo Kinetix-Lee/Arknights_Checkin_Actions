@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-cmn-Hans">
 <head>
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>Arknights</title>
 	<link
@@ -10,7 +11,7 @@
 	<meta name="keywords" content="Arknights">
 	<meta name="description" content="Arknights Simulator" />
 	<style>
-	body{background:#000;text-align:center}
+	body{background: #1b0e29;text-align:center}
 	#login{
 		position: absolute;
 		text-align:center;
@@ -21,13 +22,13 @@
 		height: 300px;
 		display: none;
     }
-	#login h3{
+	#login h1{
 		color: #fff;
 		text-shadow:0 0 10px;
 		letter-spacing: 1px;
 		text-align: center;
 	}
-    input{
+	input.input {
 		width: 275px;
 		margin-bottom: 10px;
 		outline: none;
@@ -42,48 +43,168 @@
 		border-radius: 4px;
 		background-color: #2D2D3F;
 	}
+	.tabs {
+		display: block;
+		display: -webkit-flex;
+		display: -moz-flex;
+		display: flex;
+		-webkit-flex-wrap: wrap;
+		-moz-flex-wrap: wrap;
+		flex-wrap: wrap;
+		margin: 0;
+		overflow: hidden; }
+	.tabs [class^="tab"] label,
+	.tabs [class*=" tab"] label {
+		/*     color: black; */
+		cursor: pointer;
+		display: block;
+		font-size: 1.1em;
+		color:#fff;
+		font-weight: 300;
+		line-height: 1em;
+		padding: 2rem 0;
+		text-align: center; }
+	.tabs [class^="tab"] [type="radio"],
+	.tabs [class*=" tab"] [type="radio"] {
+		/*     border-bottom: 1px solid rgba(239, 237, 239, 0.5); */
+		cursor: pointer;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+		display: block;
+		width: 100%;
+		-webkit-transition: all 0.3s ease-in-out;
+		-moz-transition: all 0.3s ease-in-out;
+		-o-transition: all 0.3s ease-in-out;
+		transition: all 0.3s ease-in-out; }
+	.tabs [class^="tab"] [type="radio"]:hover, .tabs [class^="tab"] [type="radio"]:focus,
+	.tabs [class*=" tab"] [type="radio"]:hover,
+	.tabs [class*=" tab"] [type="radio"]:focus {
+		/*    tab标签选中的颜色标志      */
+		border-bottom: 1px solid #40a9ff;
+	}
+	.tabs [class^="tab"] [type="radio"]:checked,
+	.tabs [class*=" tab"] [type="radio"]:checked {
+		border-bottom: 2px solid #40a9ff;
+	}
+	.tabs [class^="tab"] [type="radio"]:checked + div,
+	.tabs [class*=" tab"] [type="radio"]:checked + div {
+		opacity: 1; }
+	.tabs [class^="tab"] [type="radio"] + div,
+	.tabs [class*=" tab"] [type="radio"] + div {
+		display: block;
+		opacity: 0;
+		padding: 2rem 0;
+		width: 90%;
+		-webkit-transition: all 0.3s ease-in-out;
+		-moz-transition: all 0.3s ease-in-out;
+		-o-transition: all 0.3s ease-in-out;
+		transition: all 0.3s ease-in-out; }
+	.tabs .tab-2 {
+		width: 50%; }
+	.tabs .tab-2 [type="radio"] + div {
+		width: 200%;
+		margin-left: 200%; }
+	.tabs .tab-2 [type="radio"]:checked + div {
+		margin-left: 0; }
+	.tabs .tab-2:last-child [type="radio"] + div {
+		margin-left: 100%; }
+	.tabs .tab-2:last-child [type="radio"]:checked + div {
+		margin-left: -100%; }
 	</style>
 	<script src="https://cdn.jsdelivr.net/jquery/2.0.0/jquery-2.0.0.min.js"></script>
 	<script>
 	function showLogin(){
 		var loginForm = document.getElementById("login");
-		loginForm.style.display = 'block'
+		loginForm.style.display = 'block';
 		var coverOrigin = document.getElementById("cover");
-		coverOrigin.style.display = 'none'
+		coverOrigin.style.display = 'none';
 	}
-	function playAudio(){
-		var audio = document.getElementById('sys_opening');
-		if(audio.paused) {
-			audio.play();
-		}
-	}
+	function checkCookie() {
+        var signInForm = document.getElementById("signIn");
+        var userInfoForm = document.getElementById("userInfo");
+        var userNameHtml = document.getElementById("userName");
+	    accessToken=getCookie("LAST_LOGIN_ACCESS_TOKEN");
+        if (accessToken!=null){
+            signInForm.style.display = 'none';
+            userInfoForm.style.display = 'block';
+            userName=getCookie("LAST_LOGIN_NAME");
+            if (userName!=null){
+                userNameHtml.innerText="用户 "+decodeURI(userName);
+            }else{
+                userNameHtml.innerText=accessToken;
+            }
+        }else{
+            signInForm.style.display = 'block';
+            userInfoForm.style.display = 'none';
+        }
+    }
+    function signOut() {
+        var signInForm = document.getElementById("signIn");
+        var userInfoForm = document.getElementById("userInfo");
+        delCookie("LAST_LOGIN_ACCESS_TOKEN");
+        delCookie("LAST_LOGIN_NAME");
+        signInForm.style.display = 'block';
+        userInfoForm.style.display = 'none';
+    }
+	function getCookie(name)
+    {
+        var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");
+        if(arr=document.cookie.match(reg))
+            return unescape(arr[2]);
+        else
+            return null;
+    }
+    function delCookie(name)
+    {
+        var exp = new Date();
+        exp.setTime(exp.getTime() - 1);
+        var cval=getCookie(name);
+        if(cval!=null)
+            document.cookie= name + "="+cval+";expires="+exp.toGMTString();
+    }
 </script>
 </head>
-<body onload="playAudio()">
-	<div id="login">
-		<h1>明日方舟一键签到</h1>
-		<form action="checkin.php" method="post">
-			<h3>账号密码登录:</h3>
-			<input type="text" oninput = "value=value.replace(/[^\d]/g,'')" placeholder="账号" name="account">
-			<input type="password" placeholder="密码" name="password"/>
-			<h3>Auth登录:</h3>
-			<input type="text" placeholder="Access Token" name="access_token"/>
-			<br><br>
-			<input type="text" placeholder="活动签到id(为空不签到)" name="activity_id"/>
-			<input class="ak-button" style="border:none" type="submit" value="开始唤醒" id="checkin"><br>
-			<font color="red" size="1">注:一键签到会自动使用多余的信赖值并且自动设置基建房间入驻干员。<br>为了保证账号安全，建议使用Auth登录。<br>活动id填写错误则会显示当前可用活动id<br>Access Token理论上永久有效、不限设备和ip；<br>但在一次账号密码登录后，Access Token将会更新。</font>
-		</form>
-	</div>
-	<div id="cover" style="position:absolute;top:200px;margin:auto;left:0;right:0;">
-		<img src="/logo.png" style="width:300px; height:300px;"/>
-		<br/><br/></br>
-		<div class="ak-button--start" style="" onclick="showLogin()">
-			<div class="icon triangle-right"></div>
-			<div class="label">START</div>
-		</div>
-	</div>
-	<audio id="sys_opening" controls="controls" autoplay="autoplay" preload id="sys_opening" hidden>
-	<source src="/m_sys_opening_loop_slice.mp3" />
-	</audio>
+<body onload="checkCookie()">
+<div id="login">
+    <h1>明日方舟一键签到</h1>
+    <form action="checkin.php" method="post">
+        <div id="signIn">
+            <div class="tabs">
+                <div class="tab-2">
+                    <label for="tab2-1">账号密码登录</label>
+                    <input id="tab2-1" name="tabs-two" type="radio" checked="checked">
+                    <div>
+                        <input class="input" type="text" oninput = "value=value.replace(/[^\d]/g,'')" placeholder="账号" name="account">
+                        <input class="input" type="password" placeholder="密码" name="password"/>
+                        <font color="red" size="1">为了保证账号安全，建议使用Auth登录。</font>
+                    </div>
+                </div>
+                <div class="tab-2">
+                    <label for="tab2-2">Auth登录</label>
+                    <input id="tab2-2" name="tabs-two" type="radio">
+                    <div>
+                        <input class="input" type="text" placeholder="Access Token" name="access_token"/>
+                        <font color="red" size="1">Access Token理论上永久有效、不限设备和ip；<br>但在一次账号密码登录后，Access Token将会更新<br>之前的Access Token会失效。</font>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="userInfo">
+            <h3>你好！</h3>
+            <div id="userName"></div>
+            <br><button type="button" class="ak-button" onclick="signOut()">退出登录</button><br><br><br>
+        </div>
+        <input class="ak-button" style="border:none" type="submit" value="开始唤醒" id="checkin">
+    </form>
+</div>
+<div id="cover" style="position:absolute;top:200px;margin:auto;left:0;right:0;">
+    <img src="./logo.png" style="width:300px; height:300px;"/>
+    <br/><br/></br>
+    <div class="ak-button--start" style="" onclick="showLogin()">
+        <div class="icon triangle-right"></div>
+        <div class="label">START</div>
+    </div>
+</div>
 </body>
 </html>
