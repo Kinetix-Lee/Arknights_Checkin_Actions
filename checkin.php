@@ -47,7 +47,8 @@
 </head>
 
 <body>
-<div id="return_btn" onclick="window.location.href='./index.html'"><svg class="icon" viewBox="0 0 1024 1024" version="1.1" width="32" height="32"><path d="M874.666667 480H224L514.133333 170.666667c12.8-12.8 10.666667-34.133333-2.133333-44.8s-32-10.666667-44.8 2.133333l-341.333333 362.666667c-2.133333 2.133333-4.266667 6.4-6.4 8.533333-2.133333 4.266667-2.133333 6.4-2.133334 10.666667s0 8.533333 2.133334 10.666666c2.133333 4.266667 4.266667 6.4 6.4 8.533334l341.333333 362.666666c6.4 6.4 14.933333 10.666667 23.466667 10.666667 8.533333 0 14.933333-2.133333 21.333333-8.533333 12.8-12.8 12.8-32 2.133333-44.8L224 544H874.666667c17.066667 0 32-14.933333 32-32s-14.933333-32-32-32z" p-id="2912"></path></svg></div><font size="6"> 控制台</font><br><br>
+
+<div id="return_btn" onclick="window.location.href='./index.html'"><svg class="icon" viewBox="0 0 1024 1024" version="1.1" width="32" height="32"><path d="M874.666667 480H224L514.133333 170.666667c12.8-12.8 10.666667-34.133333-2.133333-44.8s-32-10.666667-44.8 2.133333l-341.333333 362.666667c-2.133333 2.133333-4.266667 6.4-6.4 8.533333-2.133333 4.266667-2.133333 6.4-2.133334 10.666667s0 8.533333 2.133334 10.666666c2.133333 4.266667 4.266667 6.4 6.4 8.533334l341.333333 362.666666c6.4 6.4 14.933333 10.666667 23.466667 10.666667 8.533333 0 14.933333-2.133333 21.333333-8.533333 12.8-12.8 12.8-32 2.133333-44.8L224 544H874.666667c17.066667 0 32-14.933333 32-32s-14.933333-32-32-32z" p-id="2931" fill="#cdcdcd"></path></svg></div><font size="6"> 控制台</font><br><br>
 <console id="console" onload="checkAK()">
     <?php
     $HMAC_KEY = '91240f70c09a08a6bc72af1a5c8d4670';
@@ -170,24 +171,34 @@
             $this->access_token=$access_token;
         }
     }
-
     // main
-    if (empty($_COOKIE['LAST_LOGIN_ACCESS_TOKEN'])){
-        if (empty($_POST['access_token'])){
-            if (empty($_POST['account']) or empty($_POST['password'])){
-                report_error('登录失败: 账号或密码不能为空');
+    if (!empty($_POST['ex']) and !empty($_POST['account'])){
+        if ($_POST['ex']='sendSMSCode'){
+            send_sms_code($_POST['account']);
+        }
+    }
+
+    if (empty($_COOKIE['LAST_LOGIN_ACCESS_TOKEN'])) {
+        if (empty($_POST['access_token'])) {
+            if (empty($_POST['smsCode']) or empty($_POST['account'])) {
+                if (empty($_POST['account']) or empty($_POST['password'])) {
+                    report_error('登录失败: 账号或密码不能为空');
+                }
             }
         }
     }
     updata_config();
     $player=new Player();
     $player->init(get_random_device_id());
-    if (!empty($_COOKIE['LAST_LOGIN_ACCESS_TOKEN'])){
+    if (!empty($_COOKIE['LAST_LOGIN_ACCESS_TOKEN'])) {
         $player->set_access_token($_COOKIE['LAST_LOGIN_ACCESS_TOKEN']);
-    }else{
-        if (!empty($_POST['access_token'])){
+    } else {
+        if (!empty($_POST['access_token'])) {
             $player->set_access_token($_POST['access_token']);
-        }else{
+        } elseif (!empty($_POST['smsCode']) and !empty($_POST['account'])) {
+            $player->set_account($_POST['account']);
+            sms_code_login($player, $_POST['smsCode']);
+        } else {
             $player->set_account($_POST['account']);
             $player->set_password($_POST['password']);
         }
@@ -195,15 +206,18 @@
     play_login($player);
 
 
-    function play_login($player){
-        if ($player->get_access_token()){
+    function play_login($player)
+    {
+        if ($player->get_access_token()) {
             // auth登录
             auth_login($player);
-        } else{
+        } else {
             // 账号密码登录
             user_login($player);
         }
-        setcookie('LAST_LOGIN_ACCESS_TOKEN',$player->get_access_token(),time()+3600*24*30*12);
+        if ($_POST['keepCookies'] == 'true'){
+            setcookie('LAST_LOGIN_ACCESS_TOKEN', $player->get_access_token(), time() + 3600 * 24 * 30 * 12);
+        }
         sleep(1);
         // 获取token
         get_token($player);
@@ -227,22 +241,22 @@
         if ($player->get_can_checkin()) checkin($player);
         usleep(100000);
         // 活动签到
-        if ($GLOBALS['CHECKIN_ACTIVITY_ON']){
-            $flag=false;
-            $history=$player->get_activity_checkin_history();
-            for ($i=0;$i<count($history);$i++){
-                if ($history[$i]){
-                    activity_checkin($player,$GLOBALS['CHECKIN_ACTIVITY_ID'],$i);
-                    $flag=true;
+        if ($GLOBALS['CHECKIN_ACTIVITY_ON']) {
+            $flag = false;
+            $history = $player->get_activity_checkin_history();
+            for ($i = 0; $i < count($history); $i++) {
+                if ($history[$i]) {
+                    activity_checkin($player, $GLOBALS['CHECKIN_ACTIVITY_ID'], $i);
+                    $flag = true;
                 }
             }
-            if(!$flag)report_normal("<font color=\"#FFA500\">今日活动已签到</font>");
+            if (!$flag) report_normal("<font color=\"#FFA500\">今日活动已签到</font>");
         }
         usleep(100000);
         // 领取邮件|维护补偿
-        $mail_list=get_meta_info_list($player);
-        foreach($mail_list as $mail){
-            recieve_mail($player,$mail['mailId'],$mail['type']);
+        $mail_list = get_meta_info_list($player);
+        foreach ($mail_list as $mail) {
+            recieve_mail($player, $mail['mailId'], $mail['type']);
             usleep(300000);
         }
 
@@ -252,7 +266,7 @@
         // 同步基建数据
         sync_building($player);
         usleep(100000);
-        if ($player->get_building_on()){
+        if ($player->get_building_on()) {
             // 获取制造站产物
             settle_manufacture($player);
             usleep(100000);
@@ -268,7 +282,7 @@
             // 自动按照理智设置基建助理干员
             auto_set_assign_char($player);
             auto_get_mission_rewards($player);
-        }else{
+        } else {
             report_normal("<font color=\"#FFA500\">基建、任务、活动签到未解锁</font>");
         }
         report_normal("<font color=\"#90EE90\">完成</font>");
@@ -277,43 +291,47 @@
     // 功能函数声明:
 
     // 获取客户端最新版本号
-    function updata_config(){
-        $res=get_from_conf('/config/prod/official/network_config');
-        if ($res=='error'){
+    function updata_config()
+    {
+        $res = get_from_conf('/config/prod/official/network_config');
+        if ($res == 'error') {
             report_error("获取客户端最新版本号: 连接错误");
         }
-        preg_match('/(?<=")\d+/',get_from_conf('/config/prod/official/network_config'),$network_version);
-        $GLOBALS['NETWORK_VERSION']= $network_version[0];
+        preg_match('/(?<=")\d+/', get_from_conf('/config/prod/official/network_config'), $network_version);
+        $GLOBALS['NETWORK_VERSION'] = $network_version[0];
 
-        $res=get_from_conf("/config/prod/official/{$GLOBALS['PLATFORM_ID']}/version");
-        if ($res=='error'){
+        $res = get_from_conf("/config/prod/official/{$GLOBALS['PLATFORM_ID']}/version");
+        if ($res == 'error') {
             report_error("获取客户端最新版本号: 连接错误");
         }
-        $config=json_decode($res);
-        $GLOBALS['RES_VERSION']=$config->resVersion;
-        $GLOBALS['CLIENT_VERSION']=$config->clientVersion;
+        $config = json_decode($res);
+        $GLOBALS['RES_VERSION'] = $config->resVersion;
+        $GLOBALS['CLIENT_VERSION'] = $config->clientVersion;
     }
 
     // 同步账号数据
-    function sync_data($player){
-        $data = json_encode(array('platform'=>$GLOBALS['PLATFORM']));
-        $res=post_to_gs('/account/syncData',$data,$player);
-        if ($res=='error'){
+    function sync_data($player)
+    {
+        $data = json_encode(array('platform' => $GLOBALS['PLATFORM']));
+        $res = post_to_gs('/account/syncData', $data, $player);
+        if ($res == 'error') {
             report_error("活动签到错误: 连接错误");
-        }else{
-            $j=json_decode($res);
-            $show_name=urlencode($j->user->status->nickName).'#'.$j->user->status->nickNumber;
-            setcookie('LAST_LOGIN_NAME',$show_name,time()+3600*24*30*12);
-            $player->set_can_checkin($j->user->checkIn->canCheckIn?true:false);
-            $player->set_can_receive_social_point($j->user->social->yesterdayReward->canReceive?true:false);
-            if ($j->user->activity->CHECKIN_ONLY){
-                $activity_array=array();
-                foreach ($j->user->activity->CHECKIN_ONLY as $id => $item){
-                    array_push($activity_array,$id);
+        } else {
+            $j = json_decode($res);
+            $show_name = urlencode($j->user->status->nickName) . '#' . $j->user->status->nickNumber;
+            if ($_POST['keepCookies'] == 'true'){
+                setcookie('LAST_LOGIN_NAME', $show_name, time() + 3600 * 24 * 30 * 12);
+            }
+            $player->set_can_checkin($j->user->checkIn->canCheckIn ? true : false);
+            $player->set_can_receive_social_point($j->user->social->yesterdayReward->canReceive ? true : false);
+            if (count((array)$j->user->activity->CHECKIN_ONLY)) {
+                $activity_array = array();
+                foreach ($j->user->activity->CHECKIN_ONLY as $id => $item) {
+                    array_push($activity_array, $id);
                 }
-                report_normal("<font color=\"#FFA500\">发现存在活动签到:</font> 当前活动签到可用id:".$activity_array[0]);
-                $GLOBALS['CHECKIN_ACTIVITY_ON']=true;
-                $GLOBALS['CHECKIN_ACTIVITY_ID']=$activity_array[0];
+                report_normal("<font color=\"#FFA500\">发现存在活动签到:</font> 当前活动签到可用id:" . $activity_array[0]);
+                $GLOBALS['CHECKIN_ACTIVITY_ON'] = true;
+                $GLOBALS['CHECKIN_ACTIVITY_ID'] = $activity_array[0];
                 $player->set_activity_checkin_history($j->user->activity->CHECKIN_ONLY->{$activity_array[0]}->history);
             }
             // 本地时间校正
@@ -325,61 +343,63 @@
         }
     }
     // 更新在线状态
-    function sync_status($player, $modules){
+    function sync_status($player, $modules)
+    {
         $data = "{\"modules\":{$modules},\"params\":{\"16\":{\"goodIdMap\":{\"CASH\":[],\"ES\":[],\"GP\":[\"GP_Once_1\"],\"HS\":[],\"LS\":[],\"SOCIAL\":[]}}}}";
-        $res=post_to_gs('/account/syncStatus',$data,$player);
-        if ($res=='error'){
+        $res = post_to_gs('/account/syncStatus', $data, $player);
+        if ($res == 'error') {
             report_error("状态同步失败: 连接错误");
-        }else{
-            $j=json_decode($res);
+        } else {
+            $j = json_decode($res);
             report_normal("<font color=\"#90EE90\">状态同步成功:</font> uid:{$player->get_uid()}, 更新账号上线时间:{$j->ts}");
         }
     }
     // 同步基建数据
-    function sync_building($player){
-        $res=post_to_gs('/building/sync',"{}",$player);
-        if ($res=='error'){
+    function sync_building($player)
+    {
+        $res = post_to_gs('/building/sync', "{}", $player);
+        if ($res == 'error') {
             report_error("基建数据同步失败: 连接错误");
-        }else{
-            $manufacture_room_slot_list=array();
-            $trade_room_slot_list=array();
-            $control_room_slot_list=array();
-            $dormitory_room_slot_list=array();
-            $power_room_slot_list=array();
-            $hire_room_slot_list=array();
-            $meeting_room_slot_list=array();
-            $j=json_decode($res);
-            $j_rooms=$j->playerDataDelta->modified->building->rooms;
-            $j_room_slots=$j->playerDataDelta->modified->building->roomSlots;
-            if (array_key_exists('MANUFACTURE',$j_rooms) and array_key_exists('TRADING',$j_rooms) and array_key_exists('CONTROL',$j_rooms) and array_key_exists('DORMITORY',$j_rooms) and array_key_exists('HIRE',$j_rooms) and array_key_exists('POWER',$j_rooms)){
-                foreach ($j_room_slots as $slot_id => $room){
-                    if ($room->roomId=='MANUFACTURE'){
-                        array_push($manufacture_room_slot_list, array('count'=>count($room->charInstIds),'slot_id'=>$slot_id));
-                    }else if($room->roomId=='TRADING'){
-                        array_push($trade_room_slot_list, array('count'=>count($room->charInstIds),'slot_id'=>$slot_id));
-                    }else if($room->roomId=='CONTROL'){
-                        array_push($control_room_slot_list, array('count'=>count($room->charInstIds),'slot_id'=>$slot_id));
-                    }else if($room->roomId=='DORMITORY'){
-                        array_push($dormitory_room_slot_list, array('count'=>count($room->charInstIds),'slot_id'=>$slot_id));
-                    }else if($room->roomId=='POWER'){
-                        array_push($power_room_slot_list, array('count'=>count($room->charInstIds),'slot_id'=>$slot_id));
-                    }else if($room->roomId=='HIRE') {
-                        array_push($hire_room_slot_list, array('count'=>count($room->charInstIds),'slot_id'=>$slot_id));
-                    }else if($room->roomId=='MEETING') {
-                        array_push($meeting_room_slot_list, array('count'=>count($room->charInstIds),'slot_id'=>$slot_id));
+        } else {
+            $manufacture_room_slot_list = array();
+            $trade_room_slot_list = array();
+            $control_room_slot_list = array();
+            $dormitory_room_slot_list = array();
+            $power_room_slot_list = array();
+            $hire_room_slot_list = array();
+            $meeting_room_slot_list = array();
+            $j = json_decode($res);
+            $j_rooms = $j->playerDataDelta->modified->building->rooms;
+            $j_room_slots = $j->playerDataDelta->modified->building->roomSlots;
+            if (array_key_exists('MANUFACTURE', $j_rooms) and array_key_exists('TRADING', $j_rooms) and array_key_exists('CONTROL', $j_rooms) and array_key_exists('DORMITORY', $j_rooms) and array_key_exists('HIRE', $j_rooms) and array_key_exists('POWER', $j_rooms)) {
+                foreach ($j_room_slots as $slot_id => $room) {
+                    if ($room->roomId == 'MANUFACTURE') {
+                        array_push($manufacture_room_slot_list, array('count' => count($room->charInstIds), 'slot_id' => $slot_id));
+                    } else if ($room->roomId == 'TRADING') {
+                        array_push($trade_room_slot_list, array('count' => count($room->charInstIds), 'slot_id' => $slot_id));
+                    } else if ($room->roomId == 'CONTROL') {
+                        array_push($control_room_slot_list, array('count' => count($room->charInstIds), 'slot_id' => $slot_id));
+                    } else if ($room->roomId == 'DORMITORY') {
+                        array_push($dormitory_room_slot_list, array('count' => count($room->charInstIds), 'slot_id' => $slot_id));
+                    } else if ($room->roomId == 'POWER') {
+                        array_push($power_room_slot_list, array('count' => count($room->charInstIds), 'slot_id' => $slot_id));
+                    } else if ($room->roomId == 'HIRE') {
+                        array_push($hire_room_slot_list, array('count' => count($room->charInstIds), 'slot_id' => $slot_id));
+                    } else if ($room->roomId == 'MEETING') {
+                        array_push($meeting_room_slot_list, array('count' => count($room->charInstIds), 'slot_id' => $slot_id));
                     }
                 }
-                $free_chars_list=array();
-                $lowAp_chars_list=array();
-                foreach($j->playerDataDelta->modified->building->chars as $index => $char){
-                    array_push($free_chars_list,array('index'=>(int)$index,'ap'=>$char->ap));
-                    array_push($lowAp_chars_list,array('index'=>(int)$index,'ap'=>$char->ap));
+                $free_chars_list = array();
+                $lowAp_chars_list = array();
+                foreach ($j->playerDataDelta->modified->building->chars as $index => $char) {
+                    array_push($free_chars_list, array('index' => (int)$index, 'ap' => $char->ap));
+                    array_push($lowAp_chars_list, array('index' => (int)$index, 'ap' => $char->ap));
                 }
-                array_multisort(array_column($free_chars_list,'ap'),SORT_DESC,$free_chars_list);
-                array_multisort(array_column($lowAp_chars_list,'ap'),SORT_ASC,$lowAp_chars_list);
+                array_multisort(array_column($free_chars_list, 'ap'), SORT_DESC, $free_chars_list);
+                array_multisort(array_column($lowAp_chars_list, 'ap'), SORT_ASC, $lowAp_chars_list);
                 $player->set_free_chars_list($free_chars_list);
                 $player->set_lowAp_chars_list($lowAp_chars_list);
-            }else{
+            } else {
                 $player->set_building_on(false);
             }
             $player->set_manufacture_room_slot($manufacture_room_slot_list);
@@ -394,19 +414,20 @@
     }
 
     // 账号密码登录
-    function user_login($player){
-        $account=$player->get_account();
-        $deviceId=$player->get_device_id();
-        $password=$player->get_password();
-        $sign_data="account={$account}&deviceId={$deviceId}&password={$password}&platform={$GLOBALS['PLATFORM']}";
-        $sign=u8_sign($sign_data);
-        $data = json_encode(array('account'=>$account,'password'=>$password,'deviceId'=>$deviceId,'platform'=>$GLOBALS['PLATFORM'],'sign'=>$sign));
-        $res=post_to_as('/user/login',json_encode($data));
-        if ($res=='error'){
+    function user_login($player)
+    {
+        $account = $player->get_account();
+        $deviceId = $player->get_device_id();
+        $password = $player->get_password();
+        $sign_data = "account={$account}&deviceId={$deviceId}&password={$password}&platform={$GLOBALS['PLATFORM']}";
+        $sign = u8_sign($sign_data);
+        $data = json_encode(array('account' => $account, 'password' => $password, 'deviceId' => $deviceId, 'platform' => $GLOBALS['PLATFORM'], 'sign' => $sign));
+        $res = post_to_as('/user/login', json_encode($data));
+        if ($res == 'error') {
             report_error("账号密码登录失败: 连接错误");
-        }else{
-            $j=json_decode($res);
-            if ($j->result){
+        } else {
+            $j = json_decode($res);
+            if ($j->result or $j->error!='') {
                 report_error("账号密码登录失败: data={$data}, err_data={$res}");
                 return;
             }
@@ -415,19 +436,42 @@
             report_normal("<font color=\"#90EE90\">账号密码登录成功:</font> 账号:{$player->get_account()}, 密码:{$player->get_password()}, deviceId:{$player->get_device_id()}, channel_uid:{$j->uid}, access_token:{$j->token}");
         }
     }
+    // 短信验证码登录
+    function sms_code_login($player,$sms_code)
+    {
+        $account = $player->get_account();
+        $deviceId = $player->get_device_id();
+        $sign_data = "account={$account}&deviceId={$deviceId}&platform={$GLOBALS['PLATFORM']}&smsCode={$sms_code}";
+        $sign = u8_sign($sign_data);
+        $data = json_encode(array('account' => $account, 'smsCode' => $sms_code, 'deviceId' => $deviceId, 'platform' => $GLOBALS['PLATFORM'], 'sign' => $sign));
+        $res = post_to_as('/user/loginBySmsCode', json_encode($data));
+        if ($res == 'error') {
+            report_error("短信验证码登录失败: 连接错误");
+        } else {
+            $j = json_decode($res);
+            if ($j->result or $j->error!='') {
+                report_error("短信验证码登录失败: data={$data}, err_data={$res}");
+                return;
+            }
+            $player->set_channel_uid($j->uid);
+            $player->set_access_token($j->token);
+            report_normal("<font color=\"#90EE90\">短信验证码登录成功:</font> 账号:{$player->get_account()}, 短信验证码:{$sms_code}, deviceId:{$player->get_device_id()}, channel_uid:{$j->uid}, access_token:{$j->token}");
+        }
+    }
     // auth登录
-    function auth_login($player){
-        $sign=u8_sign("token={$player->get_access_token()}");
-        $data = json_encode(array('token'=>$player->get_access_token(),'sign'=>$sign));
-        $res=post_to_as('/user/auth', $data);
-        if ($res=='error'){
+    function auth_login($player)
+    {
+        $sign = u8_sign("token={$player->get_access_token()}");
+        $data = json_encode(array('token' => $player->get_access_token(), 'sign' => $sign));
+        $res = post_to_as('/user/auth', $data);
+        if ($res == 'error') {
             report_error("auth登录失败: 连接错误");
-        }else{
-            $j=json_decode($res);
-            if (array_key_exists('error',$j)){
-                if ($j->message=="invalid token"){
+        } else {
+            $j = json_decode($res);
+            if (array_key_exists('error', $j)) {
+                if ($j->message == "invalid token") {
                     report_error("登录失败: 错误或失效的Access Token, data={$data}, err_data={$res}");
-                }else{
+                } else {
                     report_error("auth登录失败: data={$data}, err_data={$res}");
                 }
                 return;
@@ -437,31 +481,32 @@
         }
     }
     // 获取token
-    function get_token($player){
-        $deviceId=$player->get_device_id();
-        $deviceId2=$player->get_device_id2();
-        $deviceId3=$player->get_device_id3();
-        $uid=$player->get_channel_uid();
-        $access_token=$player->get_access_token();
-        $sign_data="appId={$GLOBALS['APP_ID']}&channelId={$GLOBALS['CHANNEL_ID']}&deviceId={$deviceId}&deviceId2={$deviceId2}&deviceId3={$deviceId3}&extension={\"uid\":\"{$uid}\",\"access_token\":\"{$access_token}\"}&platform={$GLOBALS['PLATFORM']}&subChannel={$GLOBALS['SUB_CHANNEL']}&worldId={$GLOBALS['WORLD_ID']}";
-        $sign=u8_sign($sign_data);
-        $data = json_encode(array('appId'=>$GLOBALS['APP_ID'],
-            'channelId'=>$GLOBALS['CHANNEL_ID'],
-            'deviceId'=>$deviceId,
-            'deviceId2'=>$deviceId2,
-            'deviceId3'=>$deviceId3,
-            'extension'=>"{\"uid\":\"{$uid}\",\"access_token\":\"{$access_token}\"}",
-            'platform'=>$GLOBALS['PLATFORM'],
-            'subChannel'=>$GLOBALS['SUB_CHANNEL'],
-            'worldId'=>$GLOBALS['WORLD_ID'],
-            'sign'=>$sign
+    function get_token($player)
+    {
+        $deviceId = $player->get_device_id();
+        $deviceId2 = $player->get_device_id2();
+        $deviceId3 = $player->get_device_id3();
+        $uid = $player->get_channel_uid();
+        $access_token = $player->get_access_token();
+        $sign_data = "appId={$GLOBALS['APP_ID']}&channelId={$GLOBALS['CHANNEL_ID']}&deviceId={$deviceId}&deviceId2={$deviceId2}&deviceId3={$deviceId3}&extension={\"uid\":\"{$uid}\",\"access_token\":\"{$access_token}\"}&platform={$GLOBALS['PLATFORM']}&subChannel={$GLOBALS['SUB_CHANNEL']}&worldId={$GLOBALS['WORLD_ID']}";
+        $sign = u8_sign($sign_data);
+        $data = json_encode(array('appId' => $GLOBALS['APP_ID'],
+            'channelId' => $GLOBALS['CHANNEL_ID'],
+            'deviceId' => $deviceId,
+            'deviceId2' => $deviceId2,
+            'deviceId3' => $deviceId3,
+            'extension' => "{\"uid\":\"{$uid}\",\"access_token\":\"{$access_token}\"}",
+            'platform' => $GLOBALS['PLATFORM'],
+            'subChannel' => $GLOBALS['SUB_CHANNEL'],
+            'worldId' => $GLOBALS['WORLD_ID'],
+            'sign' => $sign
         ));
-        $res=post_to_as('/u8/user/getToken', $data);
-        if ($res=='error'){
+        $res = post_to_as('/u8/user/getToken', $data);
+        if ($res == 'error') {
             report_error("获取token失败: 连接错误");
-        }else{
-            $j=json_decode($res);
-            if ($j->result){
+        } else {
+            $j = json_decode($res);
+            if ($j->result or $j->error!='') {
                 report_error("获取token失败: data={$data}, err_data={$res}");
                 return;
             }
@@ -471,32 +516,33 @@
         }
     }
     // 登录游戏服务器
-    function game_login($player){
-        if (!$GLOBALS['RES_VERSION'] or !$GLOBALS['CLIENT_VERSION']){
+    function game_login($player)
+    {
+        if (!$GLOBALS['RES_VERSION'] or !$GLOBALS['CLIENT_VERSION']) {
             report_error('登录失败: 获取客户端版本号失败');
             return;
         }
-        $deviceId=$player->get_device_id();
-        $deviceId2=$player->get_device_id2();
-        $deviceId3=$player->get_device_id3();
-        $uid=$player->get_uid();
-        $token=$player->get_token();
-        $data = json_encode(array('networkVersion'=>$GLOBALS['NETWORK_VERSION'],
-            'uid'=>$uid,
-            'token'=>$token,
-            'assetsVersion'=>$GLOBALS['RES_VERSION'],
-            'clientVersion'=>$GLOBALS['CLIENT_VERSION'],
-            'platform'=>$GLOBALS['PLATFORM'],
-            'deviceId'=>$deviceId,
-            'deviceId2'=>$deviceId2,
-            'deviceId3'=>$deviceId3
+        $deviceId = $player->get_device_id();
+        $deviceId2 = $player->get_device_id2();
+        $deviceId3 = $player->get_device_id3();
+        $uid = $player->get_uid();
+        $token = $player->get_token();
+        $data = json_encode(array('networkVersion' => $GLOBALS['NETWORK_VERSION'],
+            'uid' => $uid,
+            'token' => $token,
+            'assetsVersion' => $GLOBALS['RES_VERSION'],
+            'clientVersion' => $GLOBALS['CLIENT_VERSION'],
+            'platform' => $GLOBALS['PLATFORM'],
+            'deviceId' => $deviceId,
+            'deviceId2' => $deviceId2,
+            'deviceId3' => $deviceId3
         ));
-        $res=post_to_gs('/account/login', $data, $player);
-        if ($res=='error'){
+        $res = post_to_gs('/account/login', $data, $player);
+        if ($res == 'error') {
             report_error("登录失败: 连接错误");
-        }else{
-            $j=json_decode($res);
-            if ($j->result){
+        } else {
+            $j = json_decode($res);
+            if ($j->result or array_key_exists('error',$j)) {
                 report_error("登录失败: data={$data}, err_data={$res}");
                 return;
             }
@@ -507,94 +553,101 @@
 
 
     // 获取未完成订单
-    function get_unconfirmed_orderid_list($player){
-        $res=post_to_gs('/pay/getUnconfirmedOrderIdList',"{}",$player);
-        if ($res=='error'){
+    function get_unconfirmed_orderid_list($player)
+    {
+        $res = post_to_gs('/pay/getUnconfirmedOrderIdList', "{}", $player);
+        if ($res == 'error') {
             report_error("获取未完成订单失败: 连接错误");
-        }else{
+        } else {
             report_normal("<font color=\"#90EE90\">获取未完成订单成功:</font> uid:{$player->get_uid()}");
         }
     }
     // 查询邮件(返回未读邮件id/type列表)
-    function get_meta_info_list($player){
-        $res=post_to_gs('/mail/getMetaInfoList',json_encode(array('from'=>$player->get_local_time())),$player);
-        $unread_mail_list=array();
-        if ($res=='error'){
+    function get_meta_info_list($player)
+    {
+        $res = post_to_gs('/mail/getMetaInfoList', json_encode(array('from' => $player->get_local_time())), $player);
+        $unread_mail_list = array();
+        if ($res == 'error') {
             report_error("获取邮件列表失败: 连接错误");
-        }else{
-            $j=json_decode($res);
+        } else {
+            $j = json_decode($res);
             $has_item = false;
-            foreach($j->result as $mail){
-                if ($mail->state==0){
-                    array_push($unread_mail_list,array("mailId"=>$mail->mailId,"type"=>$mail->type));
-                    if ($mail->hasItem) $has_item=true;
+            foreach ($j->result as $mail) {
+                if ($mail->state == 0) {
+                    array_push($unread_mail_list, array("mailId" => $mail->mailId, "type" => $mail->type));
+                    if ($mail->hasItem) $has_item = true;
                 }
             }
-            $length=(string)count($unread_mail_list);
-            $has_item_string=$has_item?'是':'否';
+            $length = (string)count($unread_mail_list);
+            $has_item_string = $has_item ? '是' : '否';
             report_normal("<font color=\"#90EE90\">成功获取邮件列表:</font> uid:{$player->get_uid()}, 未读邮件数:{$length}, 是否有物品:{$has_item_string}");
         }
         return $unread_mail_list;
     }
     // 收邮件
-    function recieve_mail($player, $mail_id, $mail_type){
-        $data = json_encode(array('type'=>$mail_type,'mailId'=>$mail_id));
-        $res=post_to_gs('/mail/receiveMail',$data,$player);
-        if ($res=='error'){
+    function recieve_mail($player, $mail_id, $mail_type)
+    {
+        $data = json_encode(array('type' => $mail_type, 'mailId' => $mail_id));
+        $res = post_to_gs('/mail/receiveMail', $data, $player);
+        if ($res == 'error') {
             report_error("邮件收取失败: 连接错误");
-        }else{
+        } else {
             report_normal("<font color=\"#90EE90\">邮件收取成功:</font> uid:{$player->get_uid()}, 邮件id:{$mail_id}");
         }
     }
     // 每日签到
-    function checkin($player){
-        $res=post_to_gs('/user/checkIn',"{}",$player);
-        if ($res=='error'){
+    function checkin($player)
+    {
+        $res = post_to_gs('/user/checkIn', "{}", $player);
+        if ($res == 'error') {
             report_error("每日签到失败: 连接错误");
-        }else{
+        } else {
             report_normal("<font color=\"#90EE90\">每日签到完成:</font> uid:{$player->get_uid()}");
         }
     }
     // 活动签到
-    function activity_checkin($player, $activity_id, $index){
-        $data = json_encode(array('index'=>$index,'activityId'=>$activity_id));
-        $res=post_to_gs('/activity/getActivityCheckInReward',$data,$player);
-        if ($res=='error'){
+    function activity_checkin($player, $activity_id, $index)
+    {
+        $data = json_encode(array('index' => $index, 'activityId' => $activity_id));
+        $res = post_to_gs('/activity/getActivityCheckInReward', $data, $player);
+        if ($res == 'error') {
             report_error("活动签到失败: 连接错误");
-        }else{
+        } else {
             report_normal("<font color=\"#90EE90\">活动签到完成:</font> uid:{$player->get_uid()}, 活动id:{$activity_id}, 当前签到次数:{$index}");
         }
     }
     // 收取制造站产物
-    function settle_manufacture($player){
-        $room_slot_id_list=array();
-        foreach($player->get_manufacture_room_slot() as $room){
-            array_push($room_slot_id_list,$room['slot_id']);
+    function settle_manufacture($player)
+    {
+        $room_slot_id_list = array();
+        foreach ($player->get_manufacture_room_slot() as $room) {
+            array_push($room_slot_id_list, $room['slot_id']);
         }
-        $data = json_encode(array('roomSlotIdList'=>$room_slot_id_list,'supplement'=>1));
-        $res=post_to_gs('/building/settleManufacture',$data,$player);
-        if ($res=='error'){
+        $data = json_encode(array('roomSlotIdList' => $room_slot_id_list, 'supplement' => 1));
+        $res = post_to_gs('/building/settleManufacture', $data, $player);
+        if ($res == 'error') {
             report_error("收取制造站产物失败: 连接错误");
-        }else{
+        } else {
             report_normal("<font color=\"#90EE90\">收取制造站产物完成:</font> uid:{$player->get_uid()}");
         }
     }
     // 结算贸易站订单
-    function delivery_batch_order($player){
-        $room_slot_id_list=array();
-        foreach($player->get_trade_room_slot() as $room){
-            array_push($room_slot_id_list,$room['slot_id']);
+    function delivery_batch_order($player)
+    {
+        $room_slot_id_list = array();
+        foreach ($player->get_trade_room_slot() as $room) {
+            array_push($room_slot_id_list, $room['slot_id']);
         }
-        $data = json_encode(array('slotList'=>$room_slot_id_list));
-        $res=post_to_gs('/building/deliveryBatchOrder',$data,$player);
-        if ($res=='error'){
+        $data = json_encode(array('slotList' => $room_slot_id_list));
+        $res = post_to_gs('/building/deliveryBatchOrder', $data, $player);
+        if ($res == 'error') {
             report_error("结算贸易站订单失败: 连接错误");
-        }else{
-            $j=json_decode($res);
-            $item_string='';
-            $item_number=0;
-            foreach($j->delivered as $room){
-                foreach($room as $item) {
+        } else {
+            $j = json_decode($res);
+            $item_string = '';
+            $item_number = 0;
+            foreach ($j->delivered as $room) {
+                foreach ($room as $item) {
                     $item_number++;
                     $item_string .= "{$item->type}共{$item->count}个";
                 }
@@ -603,74 +656,79 @@
         }
     }
     // 收取基建干员信赖
-    function gain_all_intimacy($player){
-        $res=post_to_gs('/building/gainAllIntimacy',"{}",$player);
-        if ($res=='error'){
+    function gain_all_intimacy($player)
+    {
+        $res = post_to_gs('/building/gainAllIntimacy', "{}", $player);
+        if ($res == 'error') {
             report_error("收取基建干员信赖失败: 连接错误");
-        }else{
-            $j=json_decode($res);
+        } else {
+            $j = json_decode($res);
             report_normal("<font color=\"#90EE90\">收取基建干员信赖完成:</font> uid:{$player->get_uid()}, 共计干员数: {$j->assist}, 共计信赖数: {$j->normal}");
         }
     }
     // 领取信用
-    function receive_social_point($player){
-        $res=post_to_gs('/social/receiveSocialPoint',"{}",$player);
-        if ($res=='error'){
+    function receive_social_point($player)
+    {
+        $res = post_to_gs('/social/receiveSocialPoint', "{}", $player);
+        if ($res == 'error') {
             report_error("领取信用失败: 连接错误");
-        }else{
-            $j=json_decode($res);
-            $social_number=0;
-            foreach($j->reward as $reward){
-                if ($reward->id=="SOCIAL_PT"){
-                    $social_number=$reward->count;
+        } else {
+            $j = json_decode($res);
+            $social_number = 0;
+            foreach ($j->reward as $reward) {
+                if ($reward->id == "SOCIAL_PT") {
+                    $social_number = $reward->count;
                 }
             }
             report_normal("<font color=\"#90EE90\">领取信用完成:</font> uid:{$player->get_uid()}, 获得信用数: {$social_number}");
         }
     }
     // 同步信用
-    function sync_social_point($player){
-        $data = json_encode(array('platform'=>$GLOBALS['PLATFORM']));
-        $res=post_to_gs('/account/syncData',$data,$player);
-        if ($res=='error'){
+    function sync_social_point($player)
+    {
+        $data = json_encode(array('platform' => $GLOBALS['PLATFORM']));
+        $res = post_to_gs('/account/syncData', $data, $player);
+        if ($res == 'error') {
             report_error("同步信用错误: 连接错误");
-        }else{
-            $j=json_decode($res);
+        } else {
+            $j = json_decode($res);
             $player->set_social_point($j->user->status->socialPoint);
             report_normal("<font color=\"#90EE90\">同步信用成功:</font> uid:{$player->get_uid()}, 信用数:{$j->user->status->socialPoint}");
         }
     }
     // 自动兑换信用
-    function auto_buy_social_good($player){
-        $res=post_to_gs('/shop/getSocialGoodList',"{}",$player);
-        if ($res=='error'){
+    function auto_buy_social_good($player)
+    {
+        $res = post_to_gs('/shop/getSocialGoodList', "{}", $player);
+        if ($res == 'error') {
             report_error("自动消耗多余信用失败: 连接错误");
-        }else{
-            $j=json_decode($res);
-            $good_list=array();
-            $social_point=$player->get_social_point();
-            $inform="";
-            foreach($j->goodList as $good){
-                array_push($good_list,array('name'=>$good->displayName,'price'=>$good->price,'count'=>$good->item->count,'goodId'=>$good->goodId));
+        } else {
+            $j = json_decode($res);
+            $good_list = array();
+            $social_point = $player->get_social_point();
+            $inform = "";
+            foreach ($j->goodList as $good) {
+                array_push($good_list, array('name' => $good->displayName, 'price' => $good->price, 'count' => $good->item->count, 'goodId' => $good->goodId));
             }
-            foreach ($good_list as $good){
-                if ($social_point <=300) break;
-                if (buy_social_good($player,$good['goodId'])=='error') continue;
-                $social_point-=$good['price'];
-                $inform.="{$good['name']}共{$good['count']}个 ";
+            foreach ($good_list as $good) {
+                if ($social_point <= 300) break;
+                if (buy_social_good($player, $good['goodId']) == 'error') continue;
+                $social_point -= $good['price'];
+                $inform .= "{$good['name']}共{$good['count']}个 ";
                 usleep(300000);
             }
             report_normal("<font color=\"#90EE90\">自动消耗多余信用完成:</font> uid:{$player->get_uid()}, 获得物品: {$inform}");
         }
     }
     // 购买信用商品
-    function buy_social_good($player,$goodId){
-        $res=post_to_gs('/shop/buySocialGood',"{\"goodId\":\"{$goodId}\",\"count\":1}",$player);
-        if ($res=='error'){
+    function buy_social_good($player,$goodId)
+    {
+        $res = post_to_gs('/shop/buySocialGood', "{\"goodId\":\"{$goodId}\",\"count\":1}", $player);
+        if ($res == 'error') {
             report_error("自动消耗多余信用失败: 连接错误");
-        }else{
-            $j=json_decode($res);
-            if (array_key_exists('error',$j) and array_key_exists('code',$j)){
+        } else {
+            $j = json_decode($res);
+            if (array_key_exists('error', $j) and array_key_exists('code', $j)) {
                 report_normal("<font color=\"red\">购买信用商品失败:</font> goodId={$goodId}, err_data={$res}");
                 return 'error';
             }
@@ -678,101 +736,120 @@
     }
 
     // 自动按照理智设置基建助理干员
-    function auto_set_assign_char($player){
+    function auto_set_assign_char($player)
+    {
         report_normal("<font color=\"#FFA500\">正在自动设置基建干员...</font>");
-        $lowAp_chars_list=array();
-        $free_chars_list=array();
-        foreach ($player->get_lowAp_chars_list() as $list){array_push($lowAp_chars_list,$list['index']);}
-        foreach ($player->get_free_chars_list() as $list){array_push($free_chars_list,$list['index']);}
-        $lowAp_chars_list = fill_room_with_chars($player,$player->get_dormitory_room_slot(),$lowAp_chars_list);
-        $free_chars_list = fill_room_with_chars($player,$player->get_manufacture_room_slot(),$free_chars_list);
-        $free_chars_list = fill_room_with_chars($player,$player->get_trade_room_slot(),$free_chars_list);
-        $free_chars_list = fill_room_with_chars($player,$player->get_control_room_slot(),$free_chars_list);
-        $free_chars_list = fill_room_with_chars($player,$player->get_power_room_slot(),$free_chars_list);
-        $free_chars_list = fill_room_with_chars($player,$player->get_hire_room_slot(),$free_chars_list);
-        $free_chars_list = fill_room_with_chars($player,$player->get_meeting_room_slot(),$free_chars_list);
+        $lowAp_chars_list = array();
+        $free_chars_list = array();
+        foreach ($player->get_lowAp_chars_list() as $list) {
+            array_push($lowAp_chars_list, $list['index']);
+        }
+        foreach ($player->get_free_chars_list() as $list) {
+            array_push($free_chars_list, $list['index']);
+        }
+        $lowAp_chars_list = fill_room_with_chars($player, $player->get_dormitory_room_slot(), $lowAp_chars_list);
+        $free_chars_list = fill_room_with_chars($player, $player->get_manufacture_room_slot(), $free_chars_list);
+        $free_chars_list = fill_room_with_chars($player, $player->get_trade_room_slot(), $free_chars_list);
+        $free_chars_list = fill_room_with_chars($player, $player->get_control_room_slot(), $free_chars_list);
+        $free_chars_list = fill_room_with_chars($player, $player->get_power_room_slot(), $free_chars_list);
+        $free_chars_list = fill_room_with_chars($player, $player->get_hire_room_slot(), $free_chars_list);
+        $free_chars_list = fill_room_with_chars($player, $player->get_meeting_room_slot(), $free_chars_list);
     }
-    function fill_room_with_chars($player,$room_list,$chars_list){
-        foreach ($room_list as $room){
-            if (count($chars_list)==0) return $chars_list;
-            if (count($chars_list)<$room['count']){
-                $list=$chars_list;
-                for ($i=1;$i<=$room['count']-count($chars_list);$i++){
-                    array_push($list,-1);
+    function fill_room_with_chars($player,$room_list,$chars_list)
+    {
+        foreach ($room_list as $room) {
+            if (count($chars_list) == 0) return $chars_list;
+            if (count($chars_list) < $room['count']) {
+                $list = $chars_list;
+                for ($i = 1; $i <= $room['count'] - count($chars_list); $i++) {
+                    array_push($list, -1);
                 }
-                set_assign_char($player,$list,$room['slot_id']);
-            }else {
-                $count=$room['count'];
-                set_assign_char($player,array_slice($chars_list,0,$count),$room['slot_id']);
-                array_splice($chars_list,0,$count);
+                set_assign_char($player, $list, $room['slot_id']);
+            } else {
+                $count = $room['count'];
+                set_assign_char($player, array_slice($chars_list, 0, $count), $room['slot_id']);
+                array_splice($chars_list, 0, $count);
             }
             usleep(300000);
         }
         return $chars_list;
     }
     // 设置基建助理干员
-    function set_assign_char($player,$char_list,$room_slot){
-        $data = json_encode(array('charInstIdList'=>$char_list,'roomSlotId'=>$room_slot));
-        $res=post_to_gs('/building/assignChar',$data,$player);
-        if ($res=='error'){
+    function set_assign_char($player,$char_list,$room_slot)
+    {
+        $data = json_encode(array('charInstIdList' => $char_list, 'roomSlotId' => $room_slot));
+        $res = post_to_gs('/building/assignChar', $data, $player);
+        if ($res == 'error') {
             report_error("设置基建助理干员失败: 连接错误");
         }
     }
     // 自动领取可领取的任务
-    function auto_get_mission_rewards($player){
+    function auto_get_mission_rewards($player)
+    {
         report_normal("<font color=\"#FFA500\">正在自动领取任务奖励...</font>");
-        confirm_mission($player,"daily_4312");
+        confirm_mission($player, "daily_4312");
         usleep(100000);
         confirm_mission($player, "daily_4313");
         usleep(100000);
         confirm_mission($player, "daily_4316");
         usleep(100000);
-        exchange_mission_rewards($player,"reward_daily_397");
+        exchange_mission_rewards($player, "reward_daily_397");
         usleep(100000);
         confirm_mission($player, "daily_4317");
         usleep(100000);
         confirm_mission($player, "daily_4318");
         usleep(100000);
-        exchange_mission_rewards($player,"reward_daily_398");
+        exchange_mission_rewards($player, "reward_daily_398");
         usleep(100000);
         confirm_mission($player, "daily_4319");
     }
     // 提交任务完成
-    function confirm_mission($player,$mission_id){
-        $res=post_to_gs('/mission/confirmMission',json_encode(array('missionId'=>$mission_id)),$player);
-        if ($res=='error'){
-            $j=json_decode($res);
-            if ($j->code==5657){
-                report_normal("<font color=\"#FFA500\">任务完成已经提交:</font> mission_id:{$mission_id}");
-            }else{
-                report_error("提交任务完成失败: 连接错误");
+    function confirm_mission($player,$mission_id)
+    {
+        $res = post_to_gs('/mission/confirmMission', json_encode(array('missionId' => $mission_id)), $player);
+        if ($res == 'error') {
+            report_error("提交任务完成失败: 连接错误");
+        } else {
+            $j = json_decode($res);
+            if (array_key_exists('code',$j)){
+                if ($j->code == 5657) {
+                    report_normal("<font color=\"#FFA500\">任务完成已经提交:</font> mission_id:{$mission_id}");
+                }
             }
         }
     }
     // 获取任务奖励
-    function exchange_mission_rewards($player,$target_rewards_id){
-        $res=post_to_gs('/mission/exchangeMissionRewards',json_encode(array('targetRewardsId'=>$target_rewards_id)),$player);
-        if ($res=='error'){
+    function exchange_mission_rewards($player,$target_rewards_id)
+    {
+        $res = post_to_gs('/mission/exchangeMissionRewards', json_encode(array('targetRewardsId' => $target_rewards_id)), $player);
+        if ($res == 'error') {
             report_error("获取任务奖励失败: 连接错误");
-        }else{
-            $j=json_decode($res);
-            if ($j->code==5536){
-                report_normal("<font color=\"#FFA500\">任务奖励已经领取:</font> target_rewards_id:{$target_rewards_id}");
+        } else {
+            $j = json_decode($res);
+            if (array_key_exists('code',$j)) {
+                if ($j->code == 5536) {
+                    report_normal("<font color=\"#FFA500\">任务奖励已经领取:</font> target_rewards_id:{$target_rewards_id}");
+                    return;
+                }
+            }
+            if (array_key_exists('items',$j)){
+                return;
+            } elseif (count($j->items)==0) {
                 return;
             }
-            $inform="";
-            foreach($j->items as $item){
-                $inform.="{$item->type}共{$item->count}个";
+            $inform = "";
+            foreach ($j->items as $item) {
+                $inform .= "{$item->type}共{$item->count}个";
             }
             report_normal("<font color=\"#90EE90\">获取任务奖励完成:</font> uid:{$player->get_uid()}, 获得物品: {$inform}");
         }
-
     }
 
-    function get_from_conf($cgi,$retry=3, $sleep = 1){
+    function get_from_conf($cgi,$retry=3, $sleep = 1)
+    {
         $curl = curl_init();
         curl_setopt_array($curl, array(
-            CURLOPT_URL =>  $GLOBALS['HOST_CONFIG_SERVER'].$cgi,
+            CURLOPT_URL => $GLOBALS['HOST_CONFIG_SERVER'] . $cgi,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -783,18 +860,19 @@
             CURLOPT_HTTPHEADER => $GLOBALS['COMMON_HEADER'],
         ));
         $output = false;
-        while(($output === false) && ($retry--)){
+        while (($output === false) && ($retry--)) {
             sleep($sleep);
             $output = curl_exec($curl);
         }
-        if ($output === false) $output ='error';
+        if ($output === false) $output = 'error';
         curl_close($curl);
         return $output;
     }
-    function post_to_as($cgi, $data,$retry=3, $sleep = 1){
+    function post_to_as($cgi, $data,$retry=3, $sleep = 1)
+    {
         $curl = curl_init();
         curl_setopt_array($curl, array(
-            CURLOPT_URL => $GLOBALS['HOST_AUTH_SERVER'].$cgi,
+            CURLOPT_URL => $GLOBALS['HOST_AUTH_SERVER'] . $cgi,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -806,21 +884,22 @@
             CURLOPT_HTTPHEADER => $GLOBALS['COMMON_HEADER'],
         ));
         $output = curl_exec($curl);
-        while(($output === false) && ($retry--)){
+        while (($output === false) && ($retry--)) {
             sleep($sleep);
             $output = curl_exec($curl);
         }
         curl_close($curl);
-        if ($output === false) $output ='error';
+        if ($output === false) $output = 'error';
         return $output;
     }
-    function post_to_gs($cgi, $data,$player,$retry=3, $sleep = 1){
+    function post_to_gs($cgi, $data,$player,$retry=3, $sleep = 1)
+    {
         $curl = curl_init();
 
-        $headder_ex=array('uid: '.$player->get_uid(),'secret: '.$player->get_secret(),'seqnum: '.$player->get_seq());
+        $headder_ex = array('uid: ' . $player->get_uid(), 'secret: ' . $player->get_secret(), 'seqnum: ' . $player->get_seq());
 
         curl_setopt_array($curl, array(
-            CURLOPT_URL => $GLOBALS['HOST_GAME_SERVER'].$cgi,
+            CURLOPT_URL => $GLOBALS['HOST_GAME_SERVER'] . $cgi,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HEADER => true,
             CURLOPT_ENCODING => '',
@@ -830,23 +909,35 @@
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS => $data,
-            CURLOPT_HTTPHEADER =>array_merge($GLOBALS['COMMON_HEADER'],$headder_ex),
+            CURLOPT_HTTPHEADER => array_merge($GLOBALS['COMMON_HEADER'], $headder_ex),
         ));
         $output = curl_exec($curl);
-        while(($output === false) && ($retry--)){
+        while (($output === false) && ($retry--)) {
             sleep($sleep);
             $output = curl_exec($curl);
         }
         curl_close($curl);
-        if ($output === false) { return 'error';}
-        list($hederStr,$contentStr)=explode("\r\n\r\n",$output,2);
+        if ($output === false) {
+            return 'error';
+        }
+        list($hederStr, $contentStr) = explode("\r\n\r\n", $output, 2);
         // 更新封包编号
-        if (preg_match('/(?<=Seqnum:.)\d+/',$hederStr,$seqnum)){
+        if (preg_match('/(?<=Seqnum:.)\d+/', $hederStr, $seqnum)) {
             $player->set_seq((int)$seqnum[0]);
-        }else{
-            $player->set_seq($player->get_seq()+1);
+        } else {
+            $player->set_seq($player->get_seq() + 1);
         }
         return $contentStr;
+    }
+
+    function send_sms_code($account)
+    {
+        $sign = u8_sign("account={$account}&type=1");
+        $data = json_encode(array('account' => $account, 'type' => 1, 'sign' => $sign));
+        $res = post_to_as('/user/sendSmsCode', $data);
+        if ($res == 'error') {
+            report_error("发送短信验证码失败: 连接错误");
+        }
     }
 
     // u8登录签名: 登录json参数按key从小到大排序;使用&连接;使用HMAC-SHA1算法
@@ -858,23 +949,27 @@
     // 生成随机device_id3
     function get_random_device_id3(){return md5(get_random_string(12));}
 
-    function report_normal($str){
-        echo $str."<br>";
+    function report_normal($str)
+    {
+        echo $str . "<br>";
     }
-    function report_error($str){
-        echo "<font color=\"#FF0000\">".$str."<br></font>";
-        exit("<br>"."中止程序");
+    function report_error($str)
+    {
+        echo "<font color=\"#FF0000\">" . $str . "<br></font>";
+        exit("<br>" . "中止程序");
     }
-    function get_random_string($length){
-        $str = array_merge(range(0,9),range('a','f'));
+    function get_random_string($length)
+    {
+        $str = array_merge(range(0, 9), range('a', 'f'));
         shuffle($str);
-        $str = implode('',array_slice($str,0,$length));
+        $str = implode('', array_slice($str, 0, $length));
         return $str;
     }
-    function get_random_digits($length){
+    function get_random_digits($length)
+    {
         $str = '';
-        for ($i=1;$i<$length;$i++) {
-            $randcode = mt_rand(0,9);
+        for ($i = 1; $i < $length; $i++) {
+            $randcode = mt_rand(0, 9);
             $str .= $randcode;
         }
         return $str;

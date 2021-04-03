@@ -30,6 +30,7 @@
 	}
 	input.input {
 		width: 275px;
+        height: 20px;
 		margin-bottom: 10px;
 		outline: none;
 		padding: 10px;
@@ -43,6 +44,22 @@
 		border-radius: 4px;
 		background-color: #2D2D3F;
 	}
+    .smsCode{
+        width: 42%;
+        height: 20px;
+        margin-bottom: 10px;
+        outline: none;
+        padding: 10px;
+        font-size: 13px;
+        color: #fff;
+        text-shadow:1px 1px 1px;
+        border-top: 1px solid #312E3D;
+        border-left: 1px solid #312E3D;
+        border-right: 1px solid #312E3D;
+        border-bottom: 1px solid #56536A;
+        border-radius: 4px;
+        background-color: #2D2D3F;
+    }
 	.tabs {
 		display: block;
 		display: -webkit-flex;
@@ -114,56 +131,100 @@
 	</style>
 	<script src="https://cdn.jsdelivr.net/jquery/2.0.0/jquery-2.0.0.min.js"></script>
 	<script>
-	function showLogin(){
-		var loginForm = document.getElementById("login");
-		loginForm.style.display = 'block';
-		var coverOrigin = document.getElementById("cover");
-		coverOrigin.style.display = 'none';
-	}
-	function checkCookie() {
-        var signInForm = document.getElementById("signIn");
-        var userInfoForm = document.getElementById("userInfo");
-        var userNameHtml = document.getElementById("userName");
-	    accessToken=getCookie("LAST_LOGIN_ACCESS_TOKEN");
-        if (accessToken!=null){
-            signInForm.style.display = 'none';
-            userInfoForm.style.display = 'block';
-            userName=getCookie("LAST_LOGIN_NAME");
-            if (userName!=null){
-                userNameHtml.innerText="用户 "+decodeURI(userName);
+        function swToSms() {
+            var password = document.getElementById("password");
+            var smsCode = document.getElementById("smsCode");
+            password.style.display = 'none';
+            smsCode.style.display = 'block';
+        }
+        function swToPass() {
+            var password = document.getElementById("password");
+            var smsCode = document.getElementById("smsCode");
+            password.style.display = 'block';
+            smsCode.style.display = 'none';
+        }
+        function showLogin(){
+            var loginForm = document.getElementById("login");
+            var coverOrigin = document.getElementById("cover");
+            loginForm.style.display = 'block';
+            coverOrigin.style.display = 'none';
+            swToSms()
+        }
+        function checkCookie() {
+            var signInForm = document.getElementById("signIn");
+            var userInfoForm = document.getElementById("userInfo");
+            var userNameHtml = document.getElementById("userName");
+            accessToken=getCookie("LAST_LOGIN_ACCESS_TOKEN");
+            if (accessToken!=null){
+                signInForm.style.display = 'none';
+                userInfoForm.style.display = 'block';
+                userName=getCookie("LAST_LOGIN_NAME");
+                if (userName!=null){
+                    userNameHtml.innerText="用户 "+decodeURI(userName);
+                }else{
+                    userNameHtml.innerText=accessToken;
+                }
             }else{
-                userNameHtml.innerText=accessToken;
+                signInForm.style.display = 'block';
+                userInfoForm.style.display = 'none';
             }
-        }else{
+        }
+        function signOut() {
+            var signInForm = document.getElementById("signIn");
+            var userInfoForm = document.getElementById("userInfo");
+            delCookie("LAST_LOGIN_ACCESS_TOKEN");
+            delCookie("LAST_LOGIN_NAME");
             signInForm.style.display = 'block';
             userInfoForm.style.display = 'none';
         }
-    }
-    function signOut() {
-        var signInForm = document.getElementById("signIn");
-        var userInfoForm = document.getElementById("userInfo");
-        delCookie("LAST_LOGIN_ACCESS_TOKEN");
-        delCookie("LAST_LOGIN_NAME");
-        signInForm.style.display = 'block';
-        userInfoForm.style.display = 'none';
-    }
-	function getCookie(name)
-    {
-        var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");
-        if(arr=document.cookie.match(reg))
-            return unescape(arr[2]);
-        else
-            return null;
-    }
-    function delCookie(name)
-    {
-        var exp = new Date();
-        exp.setTime(exp.getTime() - 1);
-        var cval=getCookie(name);
-        if(cval!=null)
-            document.cookie= name + "="+cval+";expires="+exp.toGMTString();
-    }
-</script>
+        function sendSmsCode() {
+            var smsCodeBt = document.getElementById("smsCodeBt");
+            var account = document.getElementById("account").value;
+            if (!/^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$/.test(account)){
+                alert("手机号码有误!");
+                return;
+            }
+            smsCodeBt.disabled = true;
+            $.ajax({
+                type:'post',
+                dataType:'json',
+                url:"checkIn.php",
+                data:'ex=sendSMSCode&account='+account,
+                success:function(callback){
+                }
+            });
+            var time = 60;
+            var ttimer = setInterval(timer, 1000);
+
+            function timer() {
+                time--;
+                if (time >= 0) {
+                    smsCodeBt.innerHTML = time + "s后重新发送";
+                } else {
+                    smsCodeBt.innerHTML = "重新发送验证码";
+                    smsCodeBt.disabled = false;
+                    clearTimeout(timer);
+                    time = 60;
+                }
+            }
+        }
+        function getCookie(name)
+        {
+            var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");
+            if(arr=document.cookie.match(reg))
+                return unescape(arr[2]);
+            else
+                return null;
+        }
+        function delCookie(name)
+        {
+            var exp = new Date();
+            exp.setTime(exp.getTime() - 1);
+            var cval=getCookie(name);
+            if(cval!=null)
+                document.cookie= name + "="+cval+";expires="+exp.toGMTString();
+        }
+    </script>
 </head>
 <body onload="checkCookie()">
 <div id="login">
@@ -172,12 +233,19 @@
         <div id="signIn">
             <div class="tabs">
                 <div class="tab-2">
-                    <label for="tab2-1">账号密码登录</label>
+                    <label for="tab2-1">账号登录</label>
                     <input id="tab2-1" name="tabs-two" type="radio" checked="checked">
                     <div>
-                        <input class="input" type="text" oninput = "value=value.replace(/[^\d]/g,'')" placeholder="账号" name="account">
-                        <input class="input" type="password" placeholder="密码" name="password"/>
-                        <font color="red" size="1">为了保证账号安全，建议使用Auth登录。</font>
+                        <input class="input" type="text" oninput = "value=value.replace(/[^\d]/g,'')" placeholder="账号" name="account" id="account">
+                        <div id="password">
+                            <input class="input" type="password" placeholder="密码" name="password"/>
+                            <a href="javascript:swToSms();">手机验证码登录</a>
+                        </div>
+                        <div id="smsCode">
+                            <input class="smsCode" type="text" oninput = "value=value.replace(/[^\d]/g,'')" placeholder="短信验证码" name="smsCode" /><button type="button" class="ak-button" onclick="sendSmsCode()" id="smsCodeBt">发送验证码</button>
+                            <a href="javascript:swToPass();">账号密码登录</a>
+                        </div>
+                        <font color="red" size="1">为了保证账号安全，建议使用手机验证码登录。</font>
                     </div>
                 </div>
                 <div class="tab-2">
@@ -189,6 +257,7 @@
                     </div>
                 </div>
             </div>
+            <p><input type="checkbox" name="keepCookies" value="true" /><font color="red">记住我</font></p>
         </div>
         <div id="userInfo">
             <h3>你好！</h3>
