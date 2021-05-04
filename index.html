@@ -3,15 +3,119 @@
 <head>
 	<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<title>Arknights</title>
+	<title>Arknights CheckIn</title>
 	<link
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/gh/YunYouJun/ak-ui@gh-pages/css/ak-ui.min.css"
 	/>
 	<meta name="keywords" content="Arknights">
 	<meta name="description" content="Arknights Simulator" />
+    <style>
+        .ak-btn {
+            flex: none;
+            cursor: pointer;
+            display: inline-block;
+            padding: 0.5em;
+            line-height: 1;
+            background-color: transparent;
+            color: #999999;
+            border: 1px solid currentColor;
+            transition: color 0.3s;
+            font-weight: bold;
+        }
+        .ak-btn:focus {
+            outline: none;
+        }
+        .ak-btn:hover {
+            color: #37b2ff;
+        }
+        .ak-btn + .ak-btn {
+            margin-left: 1em;
+        }
+
+        .ak-input {
+            flex: auto;
+            min-width: 0;
+            box-sizing: border-box;
+            color: #999999;
+            font-size: 1.1em;
+            height: 100%;
+            outline: none !important;
+            background-color: transparent;
+            border-radius: 0;
+            border: none;
+            border-bottom: 1px solid currentColor;
+            transition: border-bottom-color 0.3s;
+        }
+        .ak-input:focus {
+            border-bottom: 1px solid #37b2ff;
+        }
+
+        .ak-dialog-layer {
+            color: #333333;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
+        }
+        .ak-dialog-layer-title {
+            display: flex;
+            align-items: center;
+            height: 5em;
+            background-color: #333333;
+            color: #eeeeee;
+            font-family: "HgSDKGeometos";
+            font-weight: bold;
+            letter-spacing: 0.1em;
+            line-height: 1.2;
+            padding: 0 2em;
+            border-bottom: 3px solid #37b2ff;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .ak-dialog-layer-body {
+            flex: auto;
+            min-width: 0;
+            height: 100%;
+            box-sizing: border-box;
+            color: #999999;
+            outline: none !important;
+            background-color: #ffffff;
+            border-radius: 0;
+            border: none;
+            border-bottom: 1px solid currentColor;
+            transition: border-bottom-color 0.3s;
+        }
+        .ak-form-item{
+            width: 20em;
+            position: relative;
+        }
+        .ak-select {
+            flex: none;
+            cursor: pointer;
+            display: inline-block;
+            padding: 0.5em;
+            line-height: 1;
+            background-color: transparent;
+            color: #999999;
+            border: 1px solid currentColor;
+            transition: color 0.3s;
+            font-weight: bold;
+        }
+    </style>
 	<style>
-	body{background: #1b0e29;text-align:center}
+	body{
+        background-image:url('/bg.png');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        height: 100vh;
+        margin: 0px;
+        padding: 0px;
+        text-align:center
+    }
 	#login{
 		position: absolute;
 		text-align:center;
@@ -28,38 +132,6 @@
 		letter-spacing: 1px;
 		text-align: center;
 	}
-	input.input {
-		width: 275px;
-        height: 20px;
-		margin-bottom: 10px;
-		outline: none;
-		padding: 10px;
-		font-size: 13px;
-		color: #fff;
-		text-shadow:1px 1px 1px;
-		border-top: 1px solid #312E3D;
-		border-left: 1px solid #312E3D;
-		border-right: 1px solid #312E3D;
-		border-bottom: 1px solid #56536A;
-		border-radius: 4px;
-		background-color: #2D2D3F;
-	}
-    .smsCode{
-        width: 42%;
-        height: 20px;
-        margin-bottom: 10px;
-        outline: none;
-        padding: 10px;
-        font-size: 13px;
-        color: #fff;
-        text-shadow:1px 1px 1px;
-        border-top: 1px solid #312E3D;
-        border-left: 1px solid #312E3D;
-        border-right: 1px solid #312E3D;
-        border-bottom: 1px solid #56536A;
-        border-radius: 4px;
-        background-color: #2D2D3F;
-    }
 	.tabs {
 		display: block;
 		display: -webkit-flex;
@@ -76,7 +148,6 @@
 		cursor: pointer;
 		display: block;
 		font-size: 1.1em;
-		color:#fff;
 		font-weight: 300;
 		line-height: 1em;
 		padding: 2rem 0;
@@ -98,11 +169,11 @@
 	.tabs [class*=" tab"] [type="radio"]:hover,
 	.tabs [class*=" tab"] [type="radio"]:focus {
 		/*    tab标签选中的颜色标志      */
-		border-bottom: 1px solid #40a9ff;
+		border-bottom: 1px solid #37b2ff;
 	}
 	.tabs [class^="tab"] [type="radio"]:checked,
 	.tabs [class*=" tab"] [type="radio"]:checked {
-		border-bottom: 2px solid #40a9ff;
+		border-bottom: 2px solid #37b2ff;
 	}
 	.tabs [class^="tab"] [type="radio"]:checked + div,
 	.tabs [class*=" tab"] [type="radio"]:checked + div {
@@ -131,6 +202,35 @@
 	</style>
 	<script src="https://cdn.jsdelivr.net/jquery/2.0.0/jquery-2.0.0.min.js"></script>
 	<script>
+        function changeServer() {
+            var server=document.getElementById("server");
+            var serverSelected=server.options[server.selectedIndex].value
+            if (serverSelected=='CN'){
+                othToCN();
+            }else {
+                CNToOth();
+            }
+        }
+        function CNToOth() {
+            var smsLogin = document.getElementById("smsLogin");
+            var mailLogin = document.getElementById("mailLogin");
+            var CNAT = document.getElementById("CNAT");
+            var GBAT = document.getElementById("GBAT");
+            smsLogin.style.display = 'none';
+            CNAT.style.display = 'none';
+            mailLogin.style.display = 'block';
+            GBAT.style.display = 'block';
+        }
+        function othToCN() {
+            var smsLogin = document.getElementById("smsLogin");
+            var mailLogin = document.getElementById("mailLogin");
+            var CNAT = document.getElementById("CNAT");
+            var GBAT = document.getElementById("GBAT");
+            smsLogin.style.display = 'block';
+            CNAT.style.display = 'block';
+            mailLogin.style.display = 'none';
+            GBAT.style.display = 'none';
+        }
         function swToSms() {
             var password = document.getElementById("password");
             var smsCode = document.getElementById("smsCode");
@@ -148,20 +248,33 @@
             var coverOrigin = document.getElementById("cover");
             loginForm.style.display = 'block';
             coverOrigin.style.display = 'none';
-            swToSms()
+            swToSms();
+            othToCN();
+            if(accessToken!=null || yostarLoginToken!=null) {
+                server=getCookie('LAST_LOGIN_SERVER');
+                var docServer = document.getElementById("server");
+                for (i = 0; i < docServer.length; i++) {
+                    if (docServer.options[i].value == server) {
+                        docServer.selectedIndex = i;
+                        break;
+                    }
+                }
+                docServer.disabled = 'disabled';
+            }
         }
         function checkCookie() {
             var signInForm = document.getElementById("signIn");
             var userInfoForm = document.getElementById("userInfo");
             var userNameHtml = document.getElementById("userName");
             accessToken=getCookie("LAST_LOGIN_ACCESS_TOKEN");
-            if (accessToken!=null){
+            yostarLoginToken=getCookie("LAST_LOGIN_YOSTAR_LOGIN_TOKEN");
+            if (accessToken!=null || yostarLoginToken!=null){
                 signInForm.style.display = 'none';
                 userInfoForm.style.display = 'block';
                 userName=getCookie("LAST_LOGIN_NAME");
                 if (userName!=null){
                     userNameHtml.innerText="用户 "+decodeURI(userName);
-                }else{
+                }else if(yostarLoginToken==null){
                     userNameHtml.innerText=accessToken;
                 }
             }else{
@@ -172,10 +285,13 @@
         function signOut() {
             var signInForm = document.getElementById("signIn");
             var userInfoForm = document.getElementById("userInfo");
+            delCookie("LAST_LOGIN_YOSTAR_LOGIN_TOKEN");
             delCookie("LAST_LOGIN_ACCESS_TOKEN");
+            delCookie("LAST_LOGIN_SERVER");
             delCookie("LAST_LOGIN_NAME");
             signInForm.style.display = 'block';
             userInfoForm.style.display = 'none';
+            location.reload();
         }
         function sendSmsCode() {
             var smsCodeBt = document.getElementById("smsCodeBt");
@@ -203,7 +319,40 @@
                 } else {
                     smsCodeBt.innerHTML = "重新发送验证码";
                     smsCodeBt.disabled = false;
-                    clearTimeout(timer);
+                    clearTimeout(ttimer);
+                    time = 60;
+                }
+            }
+        }
+        function sendMailCode() {
+            var mailCodeBt = document.getElementById("mailCodeBt");
+            var yostar_account = document.getElementById("yostarAccount").value;
+            if (!/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/.test(yostar_account)){
+                alert("邮箱地址有误!");
+                return;
+            }
+            var server=document.getElementById("server");
+            var serverSelected=server.options[server.selectedIndex].value;
+            mailCodeBt.disabled = true;
+            $.ajax({
+                type:'post',
+                dataType:'json',
+                url:"checkIn.php",
+                data:'ex=sendMailCode&server='+serverSelected+'&yostarAccount='+yostar_account,
+                success:function(callback){
+                }
+            });
+            var time = 60;
+            var ttimer = setInterval(timer, 1000);
+
+            function timer() {
+                time--;
+                if (time >= 0) {
+                    mailCodeBt.innerHTML = time + "s后重新发送";
+                } else {
+                    mailCodeBt.innerHTML = "重新发送验证码";
+                    mailCodeBt.disabled = false;
+                    clearTimeout(ttimer);
                     time = 60;
                 }
             }
@@ -227,45 +376,68 @@
     </script>
 </head>
 <body onload="checkCookie()">
-<div id="login">
-    <h1>明日方舟一键签到</h1>
-    <form action="checkin.php" method="post">
-        <div id="signIn">
-            <div class="tabs">
-                <div class="tab-2">
-                    <label for="tab2-1">账号登录</label>
-                    <input id="tab2-1" name="tabs-two" type="radio" checked="checked">
-                    <div>
-                        <input class="input" type="text" oninput = "value=value.replace(/[^\d]/g,'')" placeholder="账号" name="account" id="account">
-                        <div id="password">
-                            <input class="input" type="password" placeholder="密码" name="password"/>
-                            <a href="javascript:swToSms();">手机验证码登录</a>
+<div class="ak-panel-right" id="login">
+    <div class="ak-dialog-layer">
+        <div class="ak-dialog-layer-title"><h1>明日方舟一键签到</h1></div>
+        <div class="ak-dialog-layer-body">
+            <form action="checkin.php" method="post">
+                <br>服务器:
+                <select class="ak-select" id="server" name="server" onchange="changeServer()">
+                    <option value = "CN">CN</option>
+                    <option value = "JP">JP</option>
+                    <option value = "US">US/GLOBAL</option>
+                </select>
+                <div id="signIn">
+                    <div class="tabs">
+                        <div class="tab-2">
+                            <label for="tab2-1">账号登录</label>
+                            <input id="tab2-1" name="tabs-two" type="radio" checked="checked">
+                            <div id="accountLogin">
+                                <div id="smsLogin">
+                                    <input class="ak-input" type="text" oninput = "value=value.replace(/[^\d]/g,'')" placeholder="账号" name="account" id="account">
+                                    <div id="password" class="ak-form-item">
+                                        <input class="ak-input" type="password" placeholder="密码" name="password"/>
+                                        <br><a href="javascript:swToSms();" style="font-size: 0.8em; color: #37b2ff; text-decoration: none;">手机验证码登录</a>
+                                    </div>
+                                    <div id="smsCode" class="ak-form-item">
+                                        <input class="ak-input" style="width:40%" type="text" oninput = "value=value.replace(/[^\d]/g,'')" placeholder="短信验证码" name="smsCode" /><button type="button" class="ak-btn" style="margin-left:.5em" onclick="sendSmsCode()" id="smsCodeBt">发送验证码</button>
+                                        <br><a href="javascript:swToPass();" style="font-size: 0.8em; color: #37b2ff; text-decoration: none;">账号密码登录</a>
+                                    </div>
+                                    <font color="red" size="1">为了保证账号安全，建议使用手机验证码登录。</font>
+                                </div>
+                                <div id="mailLogin" class="ak-form-item">
+                                    <input class="ak-input" type="text" placeholder="邮箱" name="yostarAccount" id="yostarAccount">
+                                    <input class="ak-input" style="width:40%" type="text" oninput = "value=value.replace(/[^\d]/g,'')" placeholder="邮箱验证码" name="mailCode" /><button type="button" class="ak-btn" style="margin-left:.5em" onclick="sendMailCode()" id="mailCodeBt">发送验证码</button>
+                                </div>
+                            </div>
                         </div>
-                        <div id="smsCode">
-                            <input class="smsCode" type="text" oninput = "value=value.replace(/[^\d]/g,'')" placeholder="短信验证码" name="smsCode" /><button type="button" class="ak-button" onclick="sendSmsCode()" id="smsCodeBt">发送验证码</button>
-                            <a href="javascript:swToPass();">账号密码登录</a>
+                        <div class="tab-2">
+                            <label for="tab2-2">Auth登录</label>
+                            <input id="tab2-2" name="tabs-two" type="radio">
+                            <div class="ak-form-item">
+                                <div id="CNAT">
+                                    <input class="ak-input" type="text" placeholder="Access Token" name="accessToken"/>
+                                    <br><font color="red" size="1">Access Token理论上永久有效、不限设备和ip；<br>但在一次账号密码登录后，Access Token将会更新<br>之前的Access Token会失效。</font>
+                                </div>
+                                <div id="GBAT">
+                                    <input class="ak-input" type="text" placeholder="Yostar Login Token" name="yostarLoginToken"/>
+                                    <br><font color="red" size="1">Yostar Login Token理论上永久有效、不限设备和ip；<br>但在一次账号密码登录后，Yostar Login Token将会更新<br>之前的Yostar Login Token会失效。</font>
+                                </div>
+
+                            </div>
                         </div>
-                        <font color="red" size="1">为了保证账号安全，建议使用手机验证码登录。</font>
                     </div>
+                    <p><input type="checkbox" name="keepCookies" value="true" /><font color="red">记住我</font></p>
                 </div>
-                <div class="tab-2">
-                    <label for="tab2-2">Auth登录</label>
-                    <input id="tab2-2" name="tabs-two" type="radio">
-                    <div>
-                        <input class="input" type="text" placeholder="Access Token" name="access_token"/>
-                        <font color="red" size="1">Access Token理论上永久有效、不限设备和ip；<br>但在一次账号密码登录后，Access Token将会更新<br>之前的Access Token会失效。</font>
-                    </div>
+                <div id="userInfo">
+                    <h3>你好！</h3>
+                    <div id="userName"></div>
+                    <br><button type="button" class="ak-button" onclick="signOut()">退出登录</button><br><br><br>
                 </div>
-            </div>
-            <p><input type="checkbox" name="keepCookies" value="true" /><font color="red">记住我</font></p>
+                <input class="ak-button ak-button--action" type="submit" value="开始唤醒" id="checkin"><br><br>
+            </form>
         </div>
-        <div id="userInfo">
-            <h3>你好！</h3>
-            <div id="userName"></div>
-            <br><button type="button" class="ak-button" onclick="signOut()">退出登录</button><br><br><br>
-        </div>
-        <input class="ak-button" style="border:none" type="submit" value="开始唤醒" id="checkin">
-    </form>
+    </div>
 </div>
 <div id="cover" style="position:absolute;top:200px;margin:auto;left:0;right:0;">
     <img src="./logo.png" style="width:300px; height:300px;"/>
