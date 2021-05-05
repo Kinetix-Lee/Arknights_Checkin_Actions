@@ -1,9 +1,7 @@
 <!DOCTYPE html>
-<html>
 <html lang="zh-cmn-Hans">
 <head>
     <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Arknights CheckIn - Console</title>
     <meta name="keywords" content="Arknights">
     <meta name="description" content="Arknights Simulator" />
@@ -80,16 +78,18 @@
             if(cval!=null)
                 document.cookie= name + "="+cval+";expires="+exp.toGMTString();
         }
-        window.onload=function(){
+        function checkAK(){
             if (document.getElementById('console').innerText.includes('错误或失效的Access Token')){
                 delCookie("LAST_LOGIN_NAME");
                 delCookie("LAST_LOGIN_ACCESS_TOKEN");
+                delCookie("LAST_LOGIN_YOSTAR_LOGIN_TOKEN");
+                delCookie("LAST_LOGIN_SERVER");
             }
         }
     </script>
 </head>
 
-<body>
+<body onload="checkAK()">
 <div>
     <div class="ak-dialog-layer">
         <div class="ak-dialog-layer-title">
@@ -108,7 +108,7 @@
                     'Connection: Keep-Alive'
                 );
                 $PASSPORT_HEADER = array(
-                    'Content-Type: 	application/x-www-form-urlencoded; charset=UTF-8',
+                    'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
                     'User-Agent: Dalvik/2.1.0 (Linux; U; Android 6.0.1; X Build/V417IR)',
                     'Connection: Keep-Alive'
                 );
@@ -259,8 +259,8 @@
                         $this->access_token=$access_token;
                     }
                 }
-                $server='';
                 // 服务器设置
+                $server='';
                 if (!empty($_COOKIE['LAST_LOGIN_SERVER'])){
                     $server=$_COOKIE['LAST_LOGIN_SERVER'];
                 } elseif (!empty($_POST['server'])) {
@@ -274,7 +274,6 @@
                     $GLOBALS['HOST_VERSION_ADDR'] = $GLOBALS['HOST_VERSION_ADDR_'.$server];
                     $SERVER_ID = $GLOBALS['SERVER_ID_'.$server];
                 }
-
                 // main
                 ob_start();
                 if (!empty($_POST['ex'])){
@@ -634,7 +633,7 @@
                             return;
                         }
                         $player->set_channel_uid($j->uid);
-                        report_normal("<font color=\"#90EE90\">auth登录成功:</font> channel_uid:{$j->uid}");
+                        report_normal("<font color=\"#90EE90\">Auth登录成功:</font>, access_token:{$player->get_access_token()}, channel_uid:{$j->uid}");
                     }
                 }
                 // 获取token
@@ -669,7 +668,7 @@
                         }
                         $player->set_uid($j->uid);
                         $player->set_token($j->token);
-                        report_normal("<font color=\"#90EE90\">获取token成功:</font> uid:{$j->uid}, channel_uid:{$j->channelUid}, token:{$j->token}");
+                        report_normal("<font color=\"#90EE90\">获取Token成功:</font> uid:{$j->uid}, channel_uid:{$j->channelUid}, token:{$j->token}");
                     }
                 }
                 // 登录游戏服务器
@@ -704,7 +703,7 @@
                             return;
                         }
                         $player->set_secret($j->secret);
-                        report_normal("<font color=\"#90EE90\">登录成功:</font> uid={$player->get_uid()}, secret={$j->secret}");
+                        report_normal("<font color=\"#90EE90\">登录成功:</font> uid:{$player->get_uid()}, secret:{$j->secret}");
                     }
                 }
 
@@ -737,7 +736,7 @@
                         }
                         $length = (string)count($unread_mail_list);
                         $has_item_string = $has_item ? '是' : '否';
-                        report_normal("<font color=\"#90EE90\">成功获取邮件列表:</font> uid:{$player->get_uid()}, 未读邮件数:{$length}, 是否有物品:{$has_item_string}");
+                        report_normal("<font color=\"#90EE90\">获取邮件列表成功:</font> uid:{$player->get_uid()}, 未读邮件数:{$length}, 是否有物品:{$has_item_string}");
                     }
                     return $unread_mail_list;
                 }
@@ -871,7 +870,7 @@
                             if ($social_point <= 300) break;
                             if (buy_social_good($player, $good['goodId']) == 'error') continue;
                             $social_point -= $good['price'];
-                            $inform .= "{$good['name']}共{$good['count']}个 ";
+                            $inform .= " {$good['name']}共{$good['count']}个 ";
                             usleep(300000);
                         }
                         report_normal("<font color=\"#90EE90\">自动消耗多余信用完成:</font> uid:{$player->get_uid()}, 获得物品: {$inform}");
@@ -1177,7 +1176,11 @@
                             return;
                         } else {
                             $player->set_access_token($j->accessToken);
-                            report_normal("<font color=\"#90EE90\">账号密码登录成功:</font> 账号:{$player->get_yostar_account()}, deviceId:{$player->get_device_id()}, channel_uid:{$j->yostar_uid}, yostar_login_token:{$player->get_yostar_login_token()}");
+                            if (!empty($_COOKIE['LAST_LOGIN_YOSTAR_LOGIN_TOKEN']) or !empty($_POST['yostarLoginToken'])) {
+                                report_normal("<font color=\"#90EE90\">Yostar Login Token登录成功:</font> deviceId:{$player->get_device_id()}, channel_uid:{$j->yostar_uid}, yostar_login_token:{$player->get_yostar_login_token()}");
+                            } else {
+                                report_normal("<font color=\"#90EE90\">账号密码登录成功:</font> 账号:{$player->get_yostar_account()}, deviceId:{$player->get_device_id()}, channel_uid:{$j->yostar_uid}, yostar_login_token:{$player->get_yostar_login_token()}");
+                            }
                         }
                     }
                 }
@@ -1200,14 +1203,13 @@
                 function get_random_device_id2(){return '86'.get_random_digits(13);}
                 // 生成随机device_id3
                 function get_random_device_id3(){return md5(get_random_string(12));}
-
                 function report_normal($str)
                 {
-                    echo $str . "<br>";
+                    echo "[".time()."] ".$str ."<br>";
                 }
                 function report_error($str)
                 {
-                    echo "<font color=\"#FF0000\">" . $str . "<br></font>";
+                    echo "[".time()."] <font color=\"#FF0000\">".$str."<br></font>";
                     exit("<br>" . "中止程序");
                 }
                 function get_random_string($length)
