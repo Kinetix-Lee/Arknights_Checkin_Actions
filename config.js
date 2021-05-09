@@ -23,7 +23,7 @@ const APP_ID = '1'
 const PLATFORM_ID = 'Android';//'IOS'
 const PLATFORM = 1
 
-const SERVER = {
+const SERVERS = {
   // 国服
   CN: {
     AUTH: 'https://as.hypergryph.com',
