@@ -13,6 +13,7 @@
 - [x] utils/random.js | 字符串生成
 - [ ] utils/game.js | 游戏服务器相关操作
 - [ ] utils/serverchan.js | ServerChan 通信
+- [ ] index.js | Node.js 入口文件
 
 ## Credits
 
