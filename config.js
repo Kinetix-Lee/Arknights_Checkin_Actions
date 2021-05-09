@@ -1,3 +1,11 @@
+
+// 用户编辑内容开始
+const CREDENTIALS = {
+  TEL: '18900000000',
+  PASSWORD: 'edit me'
+}
+// 用户编辑内容结束
+
 const HMAC_KEY = '91240f70c09a08a6bc72af1a5c8d4670'
 
 const COMMON_HEADER = array(
