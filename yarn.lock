@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+atomic-sleep@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npm.taobao.org/atomic-sleep/download/atomic-sleep-1.0.0.tgz#eb85b77a601fc932cfe432c5acd364a9e2c9075b"
+  integrity sha1-64W3emAfyTLP5DLFrNNkqeLJB1s=
+
 axios@^0.21.1:
   version "0.21.1"
   resolved "https://registry.nlark.com/axios/download/axios-0.21.1.tgz#22563481962f4d6bde9a76d516ef0e5d3c09b2b8"
