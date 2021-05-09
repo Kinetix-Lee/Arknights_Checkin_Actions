@@ -19,7 +19,3 @@
 [Tao0Lu/Arknights_Checkin](https://github.com/Tao0Lu/Arknights_Checkin)
 
 [InfiniteTsukuyomi/PyAutoGame](https://github.com/InfiniteTsukuyomi/PyAutoGame "InfiniteTsukuyomi/PyAutoGame")
-
-[axios/axios](https://github.com/axios/axios)
-
-[brix/crypto-js](http://github.com/brix/crypto-js)
