@@ -8,7 +8,6 @@
 
 - [ ] .github/workflows/checkin.yml | Github Actions 配置文件
 - [x] class/Player.js | Player 类
-- [ ] class/Server.js | Server 类
 - [x] utils/account.js | 账号及游戏服务器登录
 - [x] utils/logger.js | 日志输出
 - [ ] utils/network.js | HTTP 请求
