@@ -1,16 +1,25 @@
-# 注意：本repo提供的网址仅供演示，如担心您的账号泄露，请不要使用密码登录.
+# Arknights_Checkin_Actions
 
-## 同时，本repo仅供技术学习，其明确违反了 鹰角网络游戏使用许可及服务协议 , 由此造成的一切损失原作者及转载者皆不承担任何责任.
-    4.2 本协议未授予您实施以下行为的许可，除非另行取得鹰角网络的明确书面同意，您不得实施以下行为：
-    1) 复制、发行、传播、出售、出租、改编、出版鹰角网络游戏软件，或利用鹰角网络游戏软件或鹰角网络游戏服务从事任何营利行为；
-    2) 对任何鹰角网络游戏内容进行复制、改编、传播、转载、汇编、出版、发行、表演、建立链接、建立镜像站点、直播、播放、展览、广播、翻译，或以第4.1条约定以外的方式使用任何鹰角网络游戏内容；
-    3) 对鹰角网络游戏或鹰角网络游戏服务进行反向工程、反向汇编、反向编译或者以其他方式尝试发现软件的源代码；
-    4) 超出第4.1条约定的许可范围，以任何方式使用鹰角网络游戏软件/鹰角网络游戏服务，和/或鹰角网络游戏内容。
+明日方舟在线签到（GitHub Actions + Node.js 重构）
 
+**本项目未完成**
 
-# Arknights_Checkin
-明日方舟在线签到
+# TODO
 
-Idea from [InfiniteTsukuyomi/PyAutoGame](https://github.com/InfiniteTsukuyomi/PyAutoGame "InfiniteTsukuyomi/PyAutoGame")
+- [ ] .github/workflows/checkin.yml | Github Actions 配置文件
+- [ ] utils/account.js | 账号及游戏服务器登录
+- [ ] utils/logger.js | 日志输出
+- [ ] utils/network.js | HTTP 请求
+- [x] utils/random.js | 字符串生成
+- [ ] utils/game.js | 游戏服务器相关操作
+- [ ] utils/serverchan.js | ServerChan 通信
 
-~~云玩家的日常~~
+## Credits
+
+[Tao0Lu/Arknights_Checkin](https://github.com/Tao0Lu/Arknights_Checkin)
+
+[InfiniteTsukuyomi/PyAutoGame](https://github.com/InfiniteTsukuyomi/PyAutoGame "InfiniteTsukuyomi/PyAutoGame")
+
+[axios/axios](https://github.com/axios/axios)
+
+[brix/crypto-js](http://github.com/brix/crypto-js)
