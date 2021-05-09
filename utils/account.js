@@ -3,20 +3,6 @@ const network = require('./network')
 const logger = require('./logger')
 
 module.exports = {
-  updateConfig() {
-    network.getConfig('/config/prod/official/network_config')
-      .then((result) => {
-        NETWORK_VERSION = result.toString().match(/(?<=")\d+/)
-        RES_VERSION = result.resVersion
-        CLIENT_VERSION = result.clientVersion
-        return true
-      })
-      .catch((error) => {
-        logger.error(error)
-        return false
-      })
-  },
-
   getToken(player) {
     const { account, deviceId, password } = player
     sign_data = `account=${account}&deviceId=${deviceId}&password=${password}&platform=${PLATFORM}`
