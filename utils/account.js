@@ -1,10 +1,23 @@
 const random = require('./random')
-const axios = require('axios').default
 const network = require('./network')
 const logger = require('./logger')
 
 module.exports = {
-  get_token(player) {
+  updateConfig() {
+    network.getConfig('/config/prod/official/network_config')
+      .then((result) => {
+        NETWORK_VERSION = result.toString().match(/(?<=")\d+/)
+        RES_VERSION = result.resVersion
+        CLIENT_VERSION = result.clientVersion
+        return true
+      })
+      .catch((error) => {
+        logger.error(error)
+        return false
+      })
+  },
+
+  getToken(player) {
     const { account, deviceId, password } = player
     sign_data = `account=${account}&deviceId=${deviceId}&password=${password}&platform=${PLATFORM}`
     sign = random.u8_sign(sign_data)
@@ -15,7 +28,7 @@ module.exports = {
       platform: PLATFORM,
       sign
     }
-    network.post_auth('/u8/user/getToken', data)
+    network.postAuth('/u8/user/getToken', data)
       .then((result) => {
         player.uid = result.uid
         player.token = result.token
@@ -28,7 +41,7 @@ module.exports = {
       })
   },
 
-  account_login(player) {
+  accountLogin(player) {
     const { account, deviceId, password } = player
 
     sign_data = `account=${account}&deviceId=${deviceId}&password=${password}&platform=${PLATFORM}`
@@ -41,7 +54,7 @@ module.exports = {
       platform: PLATFORM,
       sign
     }
-    network.post_account('/user/login', data)
+    network.postAccount('/user/login', data)
       .then((result) => {
         player.channelUid = result.uid
         player.token = result.token
@@ -55,7 +68,7 @@ module.exports = {
       })
   },
 
-  game_login(player) {
+  gameLogin(player) {
     if (!RES_VERSION || !CLIENT_VERSION) {
       logger.error('登录失败：客户端版本号获取失败')
       return false
@@ -72,7 +85,7 @@ module.exports = {
       deviceId2,
       deviceId3
     }
-    network.post_game('/account/login', data, player)
+    network.postGame('/account/login', data, player)
       .then((result) => {
         player.channelUid = result.uid
         player.token = result.token
