@@ -40,9 +40,9 @@ class Player {
   lowAp_chars_list = [] // 低理智干员
 
   constructor(device_id, device_id2, device_id3, access_token) {
-    this.device_id = (device_id) ? this.device_id : random.randomDeviceID()
-    this.device_id2 = (device_id2) ? this.device_id2 : random.randomDeviceID2()
-    this.device_id3 = (device_id3) ? this.device_id3 : random.randomDeviceID3()
+    this.device_id = (device_id) ? this.device_id : random.randomDeviceId()
+    this.device_id2 = (device_id2) ? this.device_id2 : random.randomDeviceId2()
+    this.device_id3 = (device_id3) ? this.device_id3 : random.randomDeviceId3()
     this.access_token = access_token
   }
 }
