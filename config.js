@@ -1,8 +1,9 @@
 
 // 用户编辑内容开始
-const CREDENTIALS = {
-  TEL: '18900000000',
-  PASSWORD: 'edit me'
+const USER = {
+  ACCOUNT: '18900000000',
+  PASSWORD: 'edit me',
+  SERVER: SERVERS.CN // 目前暂时没有实现外服功能
 }
 // 用户编辑内容结束
 
@@ -19,17 +20,17 @@ const PASSPORT_HEADER = array(
   'User-Agent: Dalvik/2.1.0 (Linux; U; Android 6.0.1; X Build/V417IR)',
   'Connection: Keep-Alive'
 )
-const RES_VERSION = ''
-const CLIENT_VERSION = ''
-const NETWORK_VERSION = ''
+let RES_VERSION = ''
+let CLIENT_VERSION = ''
+let NETWORK_VERSION = ''
 
-const MODULES = 1631
-const CHECKIN_ACTIVITY_ID = ''
-const CHECKIN_ACTIVITY_ON = false
+let MODULES = 1631
+let CHECKIN_ACTIVITY_ID = ''
+let CHECKIN_ACTIVITY_ON = false
 
-const APP_ID = '1'
-const PLATFORM_ID = 'Android';//'IOS'
-const PLATFORM = 1
+let APP_ID = '1'
+let PLATFORM_ID = 'Android';//'IOS'
+let PLATFORM = 1
 
 const SERVERS = {
   // 国服
