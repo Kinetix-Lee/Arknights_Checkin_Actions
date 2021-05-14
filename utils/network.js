@@ -1,4 +1,5 @@
 const axios = require('axios')
+require('../config')
 
 module.exports = {
   get(url, params={}, headers={}) {
@@ -6,7 +7,7 @@ module.exports = {
       axios({
         url,
         method: 'get',
-        headers,
+        headers: Object.assign(COMMON_HEADER, headers),
         params
       }).then(resolve).catch(reject)
     })
@@ -16,9 +17,15 @@ module.exports = {
       axios({
         url,
         method: 'post',
-        headers,
+        headers: Object.assign(COMMON_HEADER, headers),
         data
       }).then(resolve).catch(reject)
     })
-  }
+  },
+
+  // 命名规律：请求方法+服务器
+  getConfig = (uri, params = {}, headers = {}) => this.get(USER.SERVER.CONF + uri, params, headers),
+  postAuth = (uri, data = {}, headers = {}) => this.post(USER.SERVER.AUTH + uri, data, headers),
+  postAccount = (uri, data = {}, headers = {}) => this.post(USER.SERVER.AUTH + uri, data, headers),
+  postGame = (uri, data = {}, headers = {}) => this.post(USER.SERVER.GAME + uri, data, headers)
 }
