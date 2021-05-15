@@ -14,6 +14,7 @@
 - [x] utils/random.js | 字符串生成
 - [ ] utils/game.js | 游戏服务器相关操作
 - [ ] utils/serverchan.js | ServerChan 功能
+- [x] utils/checkInfo.js | 信息校对功能
 - [x] index.js | Node.js 入口文件
 - [ ] **国区基础功能**
 - [ ] **外区基础功能**

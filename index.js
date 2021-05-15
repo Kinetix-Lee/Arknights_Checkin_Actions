@@ -5,7 +5,13 @@ const account = require('./utils/account')
 const game = require('./utils/game')
 const sleep = require('atomic-sleep')
 const logger = require('./utils/logger')
+const checkInfo = require('./utils/checkInfo')
 require('./config')
+
+if (!checkInfo()) {
+  console.error('请检查账号信息是否正确填写！')
+  return false
+}
 
 const player = new Player()
 player.account = USER.ACCOUNT
