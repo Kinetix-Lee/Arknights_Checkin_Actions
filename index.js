@@ -19,7 +19,7 @@ player.password = USER.PASSWORD
 
 // 登录
 account.accountLogin(player)
-account.gameLogin(player)
+game.Login(player)
 
 // 同步账号数据
 game.syncStatus(player, MODULES)
