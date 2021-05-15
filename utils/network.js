@@ -27,5 +27,12 @@ module.exports = {
   getConfig = (uri, params = {}, headers = {}) => this.get(USER.SERVER.CONF + uri, params, headers),
   postAuth = (uri, data = {}, headers = {}) => this.post(USER.SERVER.AUTH + uri, data, headers),
   postAccount = (uri, data = {}, headers = {}) => this.post(USER.SERVER.AUTH + uri, data, headers),
-  postGame = (uri, data = {}, headers = {}) => this.post(USER.SERVER.GAME + uri, data, headers)
+  postGame(uri, data = {}, player) {
+    let headers = { // Headers 索引应该首字母大写吗？
+      Uid: player.uid,
+      Secret: player.secret,
+      Seqnum: player.seqnum
+    }
+    return this.post(USER.SERVER.GAME + uri, data, Object.assign(COMMON_HEADER, headers))
+  }
 }
