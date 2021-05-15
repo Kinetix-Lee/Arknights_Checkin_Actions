@@ -3,6 +3,12 @@ const network = require('./network')
 const logger = require('./logger')
 
 module.exports = {
+  /**
+   * 更新配置
+   * @author Kinetix-Lee
+   * @date 2021-05-15
+   * @returns {any}
+   */
   updateConfig() {
     network.getConfig('/config/prod/official/network_config')
       .then((result) => {
@@ -61,6 +67,13 @@ module.exports = {
       .catch((error) => logger.error('游戏数据同步失败：' + error))
   },
 
+  /**
+   * 获取身份令牌（u8 登录）
+   * @author Kinetix-Lee
+   * @date 2021-05-15
+   * @param {any} player
+   * @returns {any}
+   */
   getToken(player) {
     const { account, deviceId, password } = player
     sign_data = `account=${account}&deviceId=${deviceId}&password=${password}&platform=${PLATFORM}`
@@ -88,6 +101,13 @@ module.exports = {
       })
   },
 
+  /**
+   * 登录 Hypergryph Account
+   * @author Kinetix-Lee
+   * @date 2021-05-15
+   * @param {any} player
+   * @returns {any}
+   */
   accountLogin(player) {
     const { account, deviceId, password } = player
 
