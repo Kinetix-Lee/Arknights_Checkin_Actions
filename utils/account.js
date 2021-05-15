@@ -18,12 +18,9 @@ module.exports = {
         RES_VERSION = resultObj.resVersion
         CLIENT_VERSION = resultObj.clientVersion
 
-        return true
+        logger.out('配置更新成功')
       })
-      .catch((error) => {
-        logger.error(error)
-        return false
-      })
+      .catch((error) => logger.error('配置更新失败：' + error.toString()))
   },
 
   /**
@@ -54,10 +51,7 @@ module.exports = {
         logger.out(`获取 Token 成功：uid=${result.uid}, channel_uid=${result.channelUid}`)
         return true
       })
-      .catch((error) => {
-        logger.error(`获取 Token 失败：${error}`)
-        return false
-      })
+      .catch((error) => logger.error('获取 Token 失败：' + error.toString()))
   },
 
   /**
@@ -90,9 +84,6 @@ module.exports = {
         logger.out(`账号登录成功：uid=${player.uid}`)
         return true
       })
-      .catch((error) => {
-        logger.error(`账号登录失败：${error}`)
-        return false
-      })
+      .catch((error) => logger.error('账号登录失败：' + error.toString()))
   }
 }

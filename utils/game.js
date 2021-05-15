@@ -14,6 +14,7 @@ module.exports = {
       logger.error('登录失败：客户端版本号获取失败')
       return false
     }
+    
     const { deviceId, deviceId2, deviceId3, uid, token } = player
 
     data = {
@@ -36,10 +37,7 @@ module.exports = {
         logger.out(`游戏服务器登录成功：uid=${player.uid}`)
         return true
       })
-      .catch((error) => {
-        logger.error(`游戏服务器登录失败：${error}`)
-        return false
-      })
+      .catch((error) => logger.error('游戏服务器登录失败：', error.toString()))
   },
 
   /**
@@ -80,6 +78,6 @@ module.exports = {
         // 记录上线时间
         player.login_time = resultObj.rs
       })
-      .catch((error) => logger.error('游戏数据同步失败：' + error))
+      .catch((error) => logger.error('游戏数据同步失败：' + error.toString()))
   }
 }
