@@ -3,7 +3,8 @@
 const USER = {
   ACCOUNT: '18900000000',
   PASSWORD: 'edit me',
-  SERVER: SERVERS.CN // 目前暂时没有实现外服功能
+  SERVER: SERVERS.CN, // 目前暂时没有实现外服功能
+  PLATFORM: 'iOS' // 安卓服填写 Android
 }
 // 用户编辑内容结束
 
@@ -29,7 +30,7 @@ let CHECKIN_ACTIVITY_ID = ''
 let CHECKIN_ACTIVITY_ON = false
 
 let APP_ID = '1'
-let PLATFORM_ID = 'Android';//'IOS'
+let PLATFORM_ID = USER.PLATFORM
 let PLATFORM = 1
 
 const SERVERS = {
