@@ -14,7 +14,7 @@ module.exports = {
       logger.error('登录失败：客户端版本号获取失败')
       return false
     }
-    
+
     const { deviceId, deviceId2, deviceId3, uid, token } = player
 
     data = {
@@ -47,7 +47,7 @@ module.exports = {
    * @param {any} player
    * @returns {any}
    */
-   syncData(player) {
+  syncData(player) {
     const data = JSON.stringify({ platform: PLATFORM })
     network.postGame('/account/syncData', data, player)
       .then((result) => {
@@ -59,7 +59,6 @@ module.exports = {
         player.can_receive_social_point = (resultObj.user.social.yesterdayReward.canReceive !== 0)
         
         logger.out('游戏数据同步成功：' + displayName)
-        logger.out('同步时间（服务器时间）：' + resultObj.rs)
         logger.out('签到状态：' + player.can_checkin ? '待签到' : '已经签到过了')
         logger.out('信用点收取状态：' + player.can_receive_social_point ? '信用点待收取' : '信用点已经收取过了')
 
@@ -74,10 +73,40 @@ module.exports = {
 
         // 记录签到状况
         player.activity_checkin_history = (listActivities.length > 0) ? resultObj.user.activity.CHECKIN_ONLY[listActivities[0]].history : null
-
-        // 记录上线时间
-        player.login_time = resultObj.rs
       })
       .catch((error) => logger.error('游戏数据同步失败：' + error.toString()))
+  },
+  
+  /**
+   * 更新在线状态
+   * @author Kinetix-Lee
+   * @date 2021-05-15
+   * @param {any} player
+   * @param {any} modules
+   * @returns {any}
+   */
+  syncStatus(player, modules) {
+    const data = JSON.stringify({
+      modules,
+      params: {
+        '16': {
+          goodIdMap: {
+            CASH: [],
+            ES: [],
+            GP: ['GP_Once_1'],
+            HS: [],
+            LS: [],
+            SOCIAL: []
+          }
+        }
+      }
+    })
+
+    network.postGame('/account/syncStatus', data, player)
+      .then((result) => {
+        const resultObj = JSON.parse(result)
+        logger.out('状态同步成功，更新上线时间（服务器时间）：' + resultObj.ts)
+      })
+      .catch((error) => logger.error('状态同步失败：' + error.toString()))
   }
 }
