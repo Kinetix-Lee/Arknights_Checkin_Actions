@@ -6,9 +6,12 @@ module.exports = {
   updateConfig() {
     network.getConfig('/config/prod/official/network_config')
       .then((result) => {
-        NETWORK_VERSION = result.toString().match(/(?<=")\d+/)
-        RES_VERSION = result.resVersion
-        CLIENT_VERSION = result.clientVersion
+        const resultObj = JSON.parse(result.data)
+
+        NETWORK_VERSION = result.data.match(/(?<=")\d+/)
+        RES_VERSION = resultObj.resVersion
+        CLIENT_VERSION = resultObj.clientVersion
+
         return true
       })
       .catch((error) => {
@@ -30,8 +33,11 @@ module.exports = {
     }
     network.postAuth('/u8/user/getToken', data)
       .then((result) => {
+        result = JSON.parse(result.data)
+
         player.uid = result.uid
         player.token = result.token
+
         logger.out(`获取 Token 成功：uid=${result.uid}, channel_uid=${result.channelUid}`)
         return true
       })
@@ -56,6 +62,8 @@ module.exports = {
     }
     network.postAccount('/user/login', data)
       .then((result) => {
+        result = JSON.parse(result.data)
+
         player.channelUid = result.uid
         player.token = result.token
         
