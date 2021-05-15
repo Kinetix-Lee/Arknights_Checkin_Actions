@@ -63,7 +63,7 @@ module.exports = {
         return true
       })
       .catch((error) => {
-        logger.error(`游戏服务器登录失败：${error}`)
+        logger.error(`账号登录失败：${error}`)
         return false
       })
   },
