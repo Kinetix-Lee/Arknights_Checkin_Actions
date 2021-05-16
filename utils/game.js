@@ -212,5 +212,11 @@ module.exports = {
         logger.out('基建数据同步成功')
       })
       .catch((error) => logger.error('基建数据同步失败：' + error.toString()))
+  },
+
+  getUnconfirmedOrderIdList(player) {
+    network.postGame('/pay/getUnconfirmedOrderIdList', {}, player)
+      .then((result) => logger.out('获取未完成订单成功'))
+      .catch((error) => logger.error('获取未完成订单失败：' + error.toString()))
   }
 }
