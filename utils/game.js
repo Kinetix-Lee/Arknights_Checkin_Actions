@@ -289,5 +289,23 @@ module.exports = {
       logger.error('邮件收取失败')
       return false
     }
+  },
+
+  /**
+   * 每日签到
+   * @author Kinetix-Lee
+   * @date 2021-05-16
+   * @param {any} player
+   * @returns {boolean}
+   */
+  checkIn(player) {
+    const response = network.postGame('/user/checkIn', {}, player)
+    if (response) {
+      logger.out('每日签到成功')
+      return true
+    } else {
+      logger.error('每日签到失败')
+      return false
+    }
   }
 }
