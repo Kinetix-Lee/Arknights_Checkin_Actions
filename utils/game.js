@@ -360,5 +360,20 @@ module.exports = {
       logger.error('信用领取失败')
       return false
     }
+  },
+
+  // 同步信用
+  syncSocialPoint(player) {
+    const data = { platform: PLATFORM }
+    const response = network.postGame('/account/syncData', data, player)
+    if (response) {
+      const responseData = JSON.parse(response.data)
+      player.social_point = responseData.user.status.socialPoint
+      logger.out(`信用同步成功：${player.social_point}点`)
+      return true
+    } else {
+      logger.error('信用同步失败')
+      return false
+    }
   }
 }
