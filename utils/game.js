@@ -1,5 +1,6 @@
 const network = require('./network')
 const logger = require('./logger')
+const sleep = require('atomic-sleep')
 
 module.exports = {
   // 登录游戏服务器
@@ -373,6 +374,38 @@ module.exports = {
       return true
     } else {
       logger.error('信用同步失败')
+      return false
+    }
+  },
+
+  // 自动消耗多余信用
+  autoBuySocialGood(player) {
+    const response = network.postGame('/shop/getSocialGoodList', {}, player)
+    if (response) {
+      const responseData = JSON.parse(response.data)
+      let listGoods = []
+      let listBought = []
+      let socialPoint = player.social_point
+
+      responseData.goodList.forEach((good) => {
+        listGoods.push({
+          name: good.displayName,
+          price: good.price,
+          count: good.item.count,
+          goodId: good.goodId
+        })
+      })
+      listGoods.forEach((good) => {
+        if (socialPoint <= 300) break
+        if (!this.buySocialGood(player, good.goodId)) continue
+        socialPoint -= good.price
+        listBought.push({ name: good.name, count: good.count })
+        sleep(3000)
+      })
+      logger.out(`自动消耗多余信用完成：剩余信用${socialPoint}点，购买了：${listBought.toString()}`)
+      return true
+    } else {
+      logger.error('自动消耗多余信用失败')
       return false
     }
   }
