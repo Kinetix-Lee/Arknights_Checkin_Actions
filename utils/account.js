@@ -3,12 +3,7 @@ const network = require('./network')
 const logger = require('./logger')
 
 module.exports = {
-  /**
-   * 更新配置
-   * @author Kinetix-Lee
-   * @date 2021-05-15
-   * @returns {any}
-   */
+  // 更新配置
   updateConfig() {
     const response = network.getConfig('/config/prod/official/network_config')
     if (response) {
@@ -26,13 +21,7 @@ module.exports = {
     }
   },
 
-  /**
-   * 获取身份令牌（u8 登录）
-   * @author Kinetix-Lee
-   * @date 2021-05-15
-   * @param {any} player
-   * @returns {any}
-   */
+  // 获取身份令牌
   getToken(player) {
     const { account, deviceId, password } = player
     sign_data = `account=${account}&deviceId=${deviceId}&password=${password}&platform=${PLATFORM}`
@@ -59,13 +48,7 @@ module.exports = {
     }
   },
 
-  /**
-   * 登录 Hypergryph Account
-   * @author Kinetix-Lee
-   * @date 2021-05-15
-   * @param {any} player
-   * @returns {any}
-   */
+  // 登录鹰角账号
   accountLogin(player) {
     const { account, deviceId, password } = player
 

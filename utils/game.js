@@ -2,13 +2,7 @@ const network = require('./network')
 const logger = require('./logger')
 
 module.exports = {
-  /**
-   * 登录游戏服务器
-   * @author Kinetix-Lee
-   * @date 2021-05-15
-   * @param {any} player
-   * @returns {any}
-   */
+  // 登录游戏服务器
   login(player) {
     if (!RES_VERSION || !CLIENT_VERSION) {
       logger.error('登录失败：客户端版本号获取失败')
@@ -42,13 +36,7 @@ module.exports = {
     }
   },
 
-  /**
-   * 同步游戏数据
-   * @author Kinetix-Lee
-   * @date 2021-05-15
-   * @param {any} player
-   * @returns {any}
-   */
+  // 同步游戏数据
   syncData(player) {
     const data = { platform: PLATFORM }
     const response = network.postGame('/account/syncData', data, player)
@@ -83,14 +71,7 @@ module.exports = {
     }
   },
   
-  /**
-   * 更新在线状态
-   * @author Kinetix-Lee
-   * @date 2021-05-15
-   * @param {any} player
-   * @param {any} modules
-   * @returns {any}
-   */
+  // 更新在线状态
   syncStatus(player, modules) {
     const data = {
       modules,
@@ -119,13 +100,7 @@ module.exports = {
     }
   },
 
-  /**
-   * 同步基建数据
-   * @author Kinetix-Lee
-   * @date 2021-05-15
-   * @param {any} player
-   * @returns {any}
-   */
+  // 同步基建数据
   syncBuilding(player) {
     const response = network.postGame('/building/sync', {}, player)
     if (response) {
@@ -226,6 +201,7 @@ module.exports = {
     }
   },
 
+  // 获取未完成订单列表
   getUnconfirmedOrderIdList(player) {
     const response = network.postGame('/pay/getUnconfirmedOrderIdList', {}, player)
     if (response) {
@@ -237,13 +213,7 @@ module.exports = {
     }
   },
 
-  /**
-   * 获取邮件列表
-   * @author Kinetix-Lee
-   * @date 2021-05-16
-   * @param {any} player
-   * @returns {any}
-   */
+  // 获取邮件列表
   getMailList(player) {
     data = { from: player.getCorrectedTime() }
     const response = network.postGame('/mail/getMetaInfoList', data, player)
@@ -270,15 +240,7 @@ module.exports = {
     }
   },
 
-  /**
-   * 收取邮件
-   * @author Kinetix-Lee
-   * @date 2021-05-16
-   * @param {any} player
-   * @param {any} mailId
-   * @param {any} type
-   * @returns {boolean}
-   */
+  // 收取邮件
   receiveMail(player, mailId, type) {
     const data = { type, mailId }
     const response = network.postGame('/mail/receiveMail', data, player)
@@ -291,13 +253,7 @@ module.exports = {
     }
   },
 
-  /**
-   * 每日签到
-   * @author Kinetix-Lee
-   * @date 2021-05-16
-   * @param {any} player
-   * @returns {boolean}
-   */
+  // 每日签到
   checkIn(player) {
     const response = network.postGame('/user/checkIn', {}, player)
     if (response) {
@@ -309,15 +265,7 @@ module.exports = {
     }
   },
 
-  /**
-   * 活动签到
-   * @author Kinetix-Lee
-   * @date 2021-05-16
-   * @param {any} player
-   * @param {any} activityId
-   * @param {any} index
-   * @returns {boolean}
-   */
+  // 活动签到
   checkInActivity(player, activityId, index) {
     const data = { index, activityId }
     const response = network.postGame('/activity/getActivityCheckInReward', data, player)
@@ -330,13 +278,7 @@ module.exports = {
     }
   },
 
-  /**
-   * 收取制造站产物
-   * @author Kinetix-Lee
-   * @date 2021-05-16
-   * @param {any} player
-   * @returns {boolean}
-   */
+  // 收取制造站产物
   settleManufacture(player) {
     let roomSlotIdList = []
     player.manufacture_room_slot.forEach((room) => {
@@ -357,13 +299,7 @@ module.exports = {
     }
   },
 
-  /**
-   * 结算贸易站订单
-   * @author Kinetix-Lee
-   * @date 2021-05-16
-   * @param {any} player
-   * @returns {any}
-   */
+  // 结算贸易站订单
   deliveryBatchOrder(player) {
     let roomSlotIdList = []
     player.trade_room_slot.forEach((room) => {
@@ -393,13 +329,7 @@ module.exports = {
     }
   },
 
-  /**
-   * 收取干员信赖
-   * @author Kinetix-Lee
-   * @date 2021-05-16
-   * @param {any} player
-   * @returns {boolean}
-   */
+  // 收取干员信赖
   gainAllIntimacy(player) {
     const response = network.postGame('/building/gainAllIntimacy', {}, player)
     if (response) {
@@ -412,13 +342,7 @@ module.exports = {
     }
   },
 
-  /**
-   * 领取信用
-   * @author Kinetix-Lee
-   * @date 2021-05-16
-   * @param {any} player
-   * @returns {boolean}
-   */
+  // 领取信用
   receiveSocialPoint(player) {
     const response = postGame('/social/receiveSocialPoint', {}, player)
     if (response) {
