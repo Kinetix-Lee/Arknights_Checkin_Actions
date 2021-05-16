@@ -50,7 +50,7 @@ module.exports = {
    * @returns {any}
    */
   syncData(player) {
-    const data = JSON.stringify({ platform: PLATFORM })
+    const data = { platform: PLATFORM }
     const response = network.postGame('/account/syncData', data, player)
     if (response) {
       const responseData = JSON.parse(response.data)
@@ -92,7 +92,7 @@ module.exports = {
    * @returns {any}
    */
   syncStatus(player, modules) {
-    const data = JSON.stringify({
+    const data = {
       modules,
       params: {
         '16': {
@@ -106,7 +106,7 @@ module.exports = {
           }
         }
       }
-    })
+    }
 
     const response = network.postGame('/account/syncStatus', data, player)
     if (response) {
@@ -280,7 +280,7 @@ module.exports = {
    * @returns {boolean}
    */
   receiveMail(player, mailId, type) {
-    const data = JSON.stringify({ type, mailId })
+    const data = { type, mailId }
     const response = network.postGame('/mail/receiveMail', data, player)
     if (response) {
       logger.out('邮件收取成功：mailId=' + mailId)
