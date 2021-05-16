@@ -307,5 +307,26 @@ module.exports = {
       logger.error('每日签到失败')
       return false
     }
+  },
+
+  /**
+   * 活动签到
+   * @author Kinetix-Lee
+   * @date 2021-05-16
+   * @param {any} player
+   * @param {any} activityId
+   * @param {any} index
+   * @returns {boolean}
+   */
+  checkInActivity(player, activityId, index) {
+    const data = { index, activityId }
+    const response = network.postGame('/activity/getActivityCheckInReward', data, player)
+    if (response) {
+      logger.out(`活动签到完成：activityId=${activityId}, index=${index}`)
+      return true
+    } else {
+      logger.out('活动签到失败')
+      return false
+    }
   }
 }
