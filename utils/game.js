@@ -268,5 +268,26 @@ module.exports = {
       logger.error('获取邮件列表失败')
       return false
     }
+  },
+
+  /**
+   * 收取邮件
+   * @author Kinetix-Lee
+   * @date 2021-05-16
+   * @param {any} player
+   * @param {any} mailId
+   * @param {any} type
+   * @returns {boolean}
+   */
+  receiveMail(player, mailId, type) {
+    const data = JSON.stringify({ type, mailId })
+    const response = network.postGame('/mail/receiveMail', data, player)
+    if (response) {
+      logger.out('邮件收取成功：mailId=' + mailId)
+      return true
+    } else {
+      logger.error('邮件收取失败')
+      return false
+    }
   }
 }
