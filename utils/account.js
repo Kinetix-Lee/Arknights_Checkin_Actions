@@ -10,17 +10,20 @@ module.exports = {
    * @returns {any}
    */
   updateConfig() {
-    network.getConfig('/config/prod/official/network_config')
-      .then((result) => {
-        const resultObj = JSON.parse(result.data)
+    const response = network.getConfig('/config/prod/official/network_config')
+    if (response) {
+      const responseData = JSON.parse(response.data)
 
-        NETWORK_VERSION = result.data.match(/(?<=")\d+/)
-        RES_VERSION = resultObj.resVersion
-        CLIENT_VERSION = resultObj.clientVersion
+      NETWORK_VERSION = response.data.match(/(?<=")\d+/)
+      RES_VERSION = responseData.resVersion
+      CLIENT_VERSION = responseData.clientVersion
 
-        logger.out('配置更新成功')
-      })
-      .catch((error) => logger.error('配置更新失败：' + error.toString()))
+      logger.out('配置更新成功')
+      return true
+    } else {
+      logger.error('配置更新失败')
+      return false
+    }
   },
 
   /**
@@ -41,17 +44,19 @@ module.exports = {
       platform: PLATFORM,
       sign
     }
-    network.postAuth('/u8/user/getToken', data)
-      .then((result) => {
-        result = JSON.parse(result.data)
+    const response = network.postAuth('/u8/user/getToken', data)
+    if (response) {
+      const responseData = JSON.parse(response.data)
 
-        player.uid = result.uid
-        player.token = result.token
+      player.uid = responseData.uid
+      player.token = responseData.token
 
-        logger.out(`获取 Token 成功：uid=${result.uid}, channel_uid=${result.channelUid}`)
-        return true
-      })
-      .catch((error) => logger.error('获取 Token 失败：' + error.toString()))
+      logger.out(`获取 Token 成功：uid=${responseData.uid}, channel_uid=${responseData.channelUid}`)
+      return true
+    } else {
+      logger.error('获取 Token 失败')
+      return false
+    }
   },
 
   /**
@@ -74,16 +79,18 @@ module.exports = {
       platform: PLATFORM,
       sign
     }
-    network.postAccount('/user/login', data)
-      .then((result) => {
-        result = JSON.parse(result.data)
+    const response = network.postAccount('/user/login', data)
+    if (response) {
+      const responseData = JSON.parse(response.data)
 
-        player.channelUid = result.uid
-        player.token = result.token
-        
-        logger.out(`账号登录成功：uid=${player.uid}`)
-        return true
-      })
-      .catch((error) => logger.error('账号登录失败：' + error.toString()))
+      player.channelUid = responseData.uid
+      player.token = responseData.token
+      
+      logger.out(`账号登录成功：uid=${player.uid}`)
+      return true
+    } else {
+      logger.error('账号登陆失败')
+      return false
+    }
   }
 }

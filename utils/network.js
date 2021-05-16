@@ -1,28 +1,37 @@
 const axios = require('axios')
+const logger = require('./logger')
 require('../config')
 
 module.exports = {
   // 基础 get/post
   // 均自带 COMMON_HEADER，使用 Object.assign() 合并 headers
   get(url, params={}, headersAddition={}) {
-    return new Promise((resolve, reject) => {
-      axios({
+    try {
+      const response = await axios({
         url,
         method: 'get',
         headers: Object.assign(COMMON_HEADER, headersAddition),
         params
-      }).then(resolve).catch(reject)
-    })
+      }) 
+      return response
+    } catch (error) {
+      logger.error(error)
+      return false
+    }
   },
   post(url, data={}, headersAddition={}) {
-    return new Promise((resolve, reject) => {
-      axios({
+    try {
+      const response = await axios({
         url,
         method: 'post',
         headers: Object.assign(COMMON_HEADER, headersAddition),
         data
-      }).then(resolve).catch(reject)
-    })
+      })
+      return response
+    } catch (error) {
+      logger.error(error)
+      return false
+    }
   },
 
   // 命名规律：请求方法+服务器
