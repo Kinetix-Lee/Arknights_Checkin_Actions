@@ -391,5 +391,24 @@ module.exports = {
       logger.error('贸易站订单结算失败')
       return false
     }
+  },
+
+  /**
+   * 收取干员信赖
+   * @author Kinetix-Lee
+   * @date 2021-05-16
+   * @param {any} player
+   * @returns {boolean}
+   */
+  gainAllIntimacy(player) {
+    const response = network.postGame('/building/gainAllIntimacy', {}, player)
+    if (response) {
+      const responseData = JSON.parse(response.data)
+      logger.out(`干员信赖收取完成：干员总数${responseData.assist}，信赖总数${responseData.normal}`)
+      return true
+    } else {
+      logger.error('干员信赖收取失败')
+      return false
+    }
   }
 }
