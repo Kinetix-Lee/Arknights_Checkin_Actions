@@ -45,6 +45,14 @@ class Player {
     this.device_id3 = (device_id3) ? this.device_id3 : random.randomDeviceId3()
     this.access_token = access_token
   }
+
+  setTimeOffset(serverTime) {
+    this.time_diff = serverTime - ~(Date.now() / 1000)
+  }
+
+  getCorrectedTime() {
+    return ~(Date.now() / 1000) + this.time_diff
+  }
 }
 
 module.exports = Player
