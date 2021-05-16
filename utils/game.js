@@ -235,5 +235,38 @@ module.exports = {
       logger.error('获取未完成订单失败')
       return false
     }
+  },
+
+  /**
+   * 获取邮件列表
+   * @author Kinetix-Lee
+   * @date 2021-05-16
+   * @param {any} player
+   * @returns {any}
+   */
+  getMailList(player) {
+    data = { from: player.getCorrectedTime() }
+    const response = network.postGame('/mail/getMetaInfoList', data, player)
+    if (response) {
+      const resultObj = JSON.parse(result)
+      let listUnreadMail = []
+      let countMailWithItems = 0
+
+      resultObj.forEach((mail) => {
+        if (mail.state === 0) {
+          listUnreadMail.push({
+            mailId: mail.mailId,
+            type: mail.type
+          })
+          if (mail.hasItem) ++countMailWithItems
+          logger.out(`邮件：mailId=${mail.mailId}${mail.hasItem ? ' 有物品' : ''}`)
+        }
+      })
+      logger.out(`获取邮件列表成功：未读邮件${listUnreadMail.length}封，其中${countMailWithItems}封有附件`)
+      return listUnreadMail
+    } else {
+      logger.error('获取邮件列表失败')
+      return false
+    }
   }
 }
