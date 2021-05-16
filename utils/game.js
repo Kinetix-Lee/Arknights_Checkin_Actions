@@ -355,5 +355,41 @@ module.exports = {
       logger.error('制造站产物收取失败')
       return false
     }
+  },
+
+  /**
+   * 结算贸易站订单
+   * @author Kinetix-Lee
+   * @date 2021-05-16
+   * @param {any} player
+   * @returns {any}
+   */
+  deliveryBatchOrder(player) {
+    let roomSlotIdList = []
+    player.trade_room_slot.forEach((room) => {
+      roomSlotIdList.push(room.slot_id)
+    })
+
+    const data = { slotList: roomSlotIdList }
+    const response = postGame('/building/deliveryBatchOrder', data, player)
+    if (response) {
+      const responseData = JSON.parse(response.data)
+      const items = []
+
+      responseData.delivered.forEach((room) => {
+        room.forEach((item) => {
+          items.push({
+            type: item.type,
+            count: item.count
+          })
+        })
+      })
+
+      logger.out(`贸易站订单结算完成：获得物品${items.length}种，数据：${items.toString()}`)
+      return true
+    } else {
+      logger.error('贸易站订单结算失败')
+      return false
+    }
   }
 }
