@@ -410,5 +410,31 @@ module.exports = {
       logger.error('干员信赖收取失败')
       return false
     }
+  },
+
+  /**
+   * 领取信用
+   * @author Kinetix-Lee
+   * @date 2021-05-16
+   * @param {any} player
+   * @returns {boolean}
+   */
+  receiveSocialPoint(player) {
+    const response = postGame('/social/receiveSocialPoint', {}, player)
+    if (response) {
+      const responseData = JSON.parse(response.data)
+      let socialPoint = 0
+
+      responseData.reward.forEach((reward) => {
+        if (reward.id === 'SOCIAL_PT')
+        socialPoint = reward.count
+      })
+
+      logger.out(`信用领取完成：领取了${socialPoint}点`)
+      return true
+    } else {
+      logger.error('信用领取失败')
+      return false
+    }
   }
 }
