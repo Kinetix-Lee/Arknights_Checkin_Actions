@@ -408,5 +408,22 @@ module.exports = {
       logger.error('自动消耗多余信用失败')
       return false
     }
+  },
+
+  // 购买信用商品
+  buySocialGood(player, goodId) {
+    const data = { goodId, count: 1 }
+    const response = network.postGame('/shop/buySocialGood', data, player)
+    if (response) {
+      const responseData = JSON.parse(response.data)
+      if (typeof responseData.error !== 'undefined' && typeof responseData.code !== 'undefined') {
+        logger.error(`信用商品购买失败：goodId=${goodId}, response=${response.toString()}`)
+        return false
+      }
+      return true
+    } else {
+      logger.error(`信用商品购买失败：goodId=${goodId}`)
+      return false
+    }
   }
 }
