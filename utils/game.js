@@ -328,5 +328,32 @@ module.exports = {
       logger.out('活动签到失败')
       return false
     }
+  },
+
+  /**
+   * 收取制造站产物
+   * @author Kinetix-Lee
+   * @date 2021-05-16
+   * @param {any} player
+   * @returns {boolean}
+   */
+  settleManufacture(player) {
+    let roomSlotIdList = []
+    player.manufacture_room_slot.forEach((room) => {
+      roomSlotIdList.push(room.slot_id)
+    })
+
+    const data = {
+      roomSlotIdList,
+      supplement: 1
+    }
+    const response = network.postGame('/building/settleManufacture', data, player)
+    if (response) {
+      logger.out('制造站产物收取完成')
+      return true
+    } else {
+      logger.error('制造站产物收取失败')
+      return false
+    }
   }
 }
