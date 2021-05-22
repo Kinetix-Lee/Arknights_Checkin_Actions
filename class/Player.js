@@ -1,7 +1,5 @@
 const random = require('../utils/random')
 
-random = require('../utils/random')
-
 class Player {
   device_id = '' // 登录设备指纹, 注册账号时使用的唯一标识
   device_id2 = '' // imei
