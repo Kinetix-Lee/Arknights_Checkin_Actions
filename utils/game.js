@@ -404,13 +404,14 @@ module.exports = {
           goodId: good.goodId
         })
       })
-      listGoods.forEach((good) => {
-        if (socialPoint <= 300) break
-        if (!this.buySocialGood(player, good.goodId)) continue
-        socialPoint -= good.price
-        listBought.push({ name: good.name, count: good.count })
-        sleep(3000)
-      })
+      if (socialPoint > 300)
+        for (index in listGoods) {
+          const good = listGoods[index]
+          if (!this.buySocialGood(player, good.goodId)) continue
+          socialPoint -= good.price
+          listBought.push({ name: good.name, count: good.count })
+          sleep(3000)
+        }
       logger.out(`自动消耗多余信用完成：剩余信用${socialPoint}点，购买了：${listBought.toString()}`)
       return true
     } else {
