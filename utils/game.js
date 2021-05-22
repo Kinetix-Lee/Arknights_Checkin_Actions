@@ -486,5 +486,33 @@ module.exports = {
       logger.error('基建助理干员设置失败')
       return false
     }
+  },
+
+  // 自动领取任务奖励
+  receiveMissionRewards(player) {
+    // TODO: 优化代码结构
+    // （这……太冗杂了啊喂！）
+
+    logger.out('开始领取任务奖励')
+
+    confirmMission(player, 'daily_4312')
+    sleep(1000)
+
+    confirmMission(player, 'daily_4313')
+    sleep(1000)
+
+    exchangeMissionRewards(player, 'reward_daily_397')
+    sleep(1000)
+
+    confirmMission(player, 'daily_4317')
+    sleep(1000)
+
+    confirmMission(player, 'daily_4318')
+    sleep(1000)
+
+    exchangeMissionRewards(player, 'reward_daily_398')
+    sleep(1000)
+
+    confirmMission(player, 'daily_4319')
   }
 }
