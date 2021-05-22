@@ -12,7 +12,7 @@
 - [x] utils/logger.js | 日志输出
 - [x] utils/network.js | HTTP 请求
 - [x] utils/random.js | 字符串生成
-- [ ] utils/game.js | 游戏服务器相关操作
+- [x] utils/game.js | 游戏服务器相关操作
 - [ ] utils/serverchan.js | ServerChan 功能
 - [x] utils/checkInfo.js | 信息校对功能
 - [ ] index.js | Node.js 入口文件
