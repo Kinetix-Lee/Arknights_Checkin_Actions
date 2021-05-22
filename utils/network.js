@@ -7,7 +7,7 @@ module.exports = {
   // 均自带 COMMON_HEADER，使用 Object.assign() 合并 headers
   get(url, params={}, headersAddition={}) {
     try {
-      const response = await axios({
+      const response = axios({
         url,
         method: 'get',
         headers: Object.assign(COMMON_HEADER, headersAddition),
@@ -21,7 +21,7 @@ module.exports = {
   },
   post(url, data={}, headersAddition={}) {
     try {
-      const response = await axios({
+      const response = axios({
         url,
         method: 'post',
         headers: Object.assign(COMMON_HEADER, headersAddition),
