@@ -420,6 +420,7 @@ module.exports = {
         logger.error(`信用商品购买失败：goodId=${goodId}, response=${response.toString()}`)
         return false
       }
+      logger.out('信用商品购买成功：goodId=' + goodId)
       return true
     } else {
       logger.error(`信用商品购买失败：goodId=${goodId}`)
@@ -449,7 +450,7 @@ module.exports = {
     listCharFree = this.arrangeRoomForChars(player, player.meeting_room_slot, listCharFree)
   },
 
-  // 分配干员
+  // 给基建设施分配干员
   arrangeRoomForChars(player, listRoom, listChar) {
     listRoom.forEach((room) => {
       // TODO: 解释此段代码
