@@ -10,17 +10,17 @@ const USER = {
 
 const HMAC_KEY = '91240f70c09a08a6bc72af1a5c8d4670'
 
-const COMMON_HEADER = array(
+const COMMON_HEADER = [
   'Content-Type: application/json',
   'X-Unity-Version: 2017.4.39f1',
   'User-Agent: Dalvik/2.1.0 (Linux; U; Android 6.0.1; X Build/V417IR)',
   'Connection: Keep-Alive'
-)
-const PASSPORT_HEADER = array(
+]
+const PASSPORT_HEADER = [
   'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
   'User-Agent: Dalvik/2.1.0 (Linux; U; Android 6.0.1; X Build/V417IR)',
   'Connection: Keep-Alive'
-)
+]
 let RES_VERSION = ''
 let CLIENT_VERSION = ''
 let NETWORK_VERSION = ''
@@ -61,4 +61,19 @@ const SERVERS = {
     VER: 'https://ark-us-static-online.yo-star.com/assetbundle/official/Android/version',
     ID: '3'
   }
+}
+
+switch (USER.SERVER) {
+  case 'CN':
+    USER.SERVER = SERVERS.CN
+    break
+  case 'JP':
+    USER.SERVER = SERVERS.JP
+    break
+  case 'US':
+    USER.SERVER = SERVERS.US
+    break
+  default:
+    USER.SERVER = SERVERS.CN
+    break
 }
