@@ -39,7 +39,7 @@ class Player {
   free_chars_list = [] // 空闲干员
   lowAp_chars_list = [] // 低理智干员
 
-  constructor(device_id, device_id2, device_id3, access_token) {
+  constructor(device_id=false, device_id2=false, device_id3=false, access_token='') {
     this.device_id = (device_id) ? this.device_id : random.randomDeviceId()
     this.device_id2 = (device_id2) ? this.device_id2 : random.randomDeviceId2()
     this.device_id3 = (device_id3) ? this.device_id3 : random.randomDeviceId3()
