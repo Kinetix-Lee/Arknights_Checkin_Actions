@@ -37,10 +37,10 @@ module.exports = {
   // 命名规律：请求方法+服务器
 
   // 获取 配置信息
-  getConfig = (uri) => this.get(USER.SERVER.CONF + uri),
+  getConfig: (uri) => this.get(USER.SERVER.CONF + uri),
 
   // 访问 账号认证服务器
-  postAuth = (uri, data = {}) => this.post(USER.SERVER.AUTH + uri, data),
+  postAuth: (uri, data = {}) => this.post(USER.SERVER.AUTH + uri, data),
 
   // 访问 游戏服务器
   postGame(uri, data = {}, player) {
@@ -53,5 +53,5 @@ module.exports = {
   },
 
   // 访问 Yostar 账号服务器（外服专用）
-  postPassport = (uri, data = {}) => this.post(USER.SERVER.PASSPORT + uri, data)
+  postPassport: (uri, data = {}) => this.post(USER.SERVER.PASSPORT + uri, data)
 }
