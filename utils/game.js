@@ -521,14 +521,35 @@ module.exports = {
     const response = network.postGame('/mission/confirmMission', { missionId }, player)
     if (response) {
       const responseData = JSON.parse(response.data)
-      if (
-        typeof responseData.code !== 'undefined' &&
-        responseData.code === 5657
-      )
+      if (typeof responseData.code !== 'undefined' &&
+          responseData.code === 5657)
         logger.out(`任务 ${missionId} 已完成`)
       return true
     } else {
       logger.error(`任务 ${missionId} 完成失败`)
+      return false
+    }
+  },
+
+  // 领取任务奖励
+  exchangeMissionRewards(player, targetRewardsId) {
+    const response = network.postGame('/mission/exchangeMissionRewards', { targetRewardsId }, player)
+    if (response) {
+      const responseData = JSON.parse(response.data)
+
+      if (typeof responseData.code !== 'undefined' &&
+          responseData.code === 5536)
+        logger.out('任务奖励已经领取：targetRewardsId=', targetRewardsId)
+      else if (typeof responseData.items !== 'undefined' && responseData.items.length > 0) {
+        logger.out('任务奖励领取成功，获得的物品：')
+        responseData.items.forEach((item) => {
+          logger.out(`获得 ${item.type} 共 ${item.count} 个`)
+        })
+      }
+    
+      return true
+    } else {
+      logger.error('任务奖励领取失败')
       return false
     }
   }
