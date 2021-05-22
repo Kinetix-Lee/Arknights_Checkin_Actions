@@ -4,16 +4,16 @@ function inPhoneNumberForm(input) {
 }
 
 module.exports = (user) => {
-  if (typeof user.ACCOUNT !== 'string' || inPhoneNumberForm(user.ACCOUNT))
+  if (typeof user.account !== 'string' || inPhoneNumberForm(user.account))
     return false
   
-  if (typeof user.PASSWORD !== 'string')
+  if (typeof user.password !== 'string')
     return false
   
-  if (typeof user.SERVER !== 'object')
+  if (typeof user.server !== 'object')
     return false
   
-  if (typeof user.PLATFORM !== 'string' || (user.PLATFORM !== 'iOS' && user.PLATFORM !== 'Android'))
+  if (typeof user.platform !== 'string' || (user.platform !== 'iOS' && user.platform !== 'Android'))
     return false
   
   return true

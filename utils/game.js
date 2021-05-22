@@ -5,7 +5,9 @@ const sleep = require('atomic-sleep')
 module.exports = {
   // 登录游戏服务器
   login(player) {
-    if (!RES_VERSION || !CLIENT_VERSION) {
+    const { resVersion, clientVersion, platform } = player.config
+
+    if (!resVersion || !clientVersion) {
       logger.error('登录失败：客户端版本号获取失败')
       return false
     }
@@ -15,9 +17,9 @@ module.exports = {
     data = {
       uid,
       token,
-      assetsVersion: RES_VERSION,
-      clientVersion: CLIENT_VERSION,
-      platform: PLATFORM,
+      assetsVersion: resVersion, // TODO: 更改用词（resVersion -> assetsVersion）
+      clientVersion,
+      platform,
       deviceId,
       deviceId2,
       deviceId3
@@ -39,7 +41,7 @@ module.exports = {
 
   // 同步游戏数据
   syncData(player) {
-    const data = { platform: PLATFORM }
+    const data = { platform: player.config.platform }
     const response = network.postGame('/account/syncData', data, player)
     if (response) {
       const responseData = JSON.parse(response.data)
@@ -374,7 +376,7 @@ module.exports = {
 
   // 同步信用
   syncSocialPoint(player) {
-    const data = { platform: PLATFORM }
+    const data = { platform: player.config.platform }
     const response = network.postGame('/account/syncData', data, player)
     if (response) {
       const responseData = JSON.parse(response.data)

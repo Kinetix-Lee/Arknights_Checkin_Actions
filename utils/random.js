@@ -1,4 +1,3 @@
-require('../config')
 const CryptoJS = require('crypto-js')
 module.exports = {
   randomDigits(length) {
@@ -21,5 +20,5 @@ module.exports = {
   randomDeviceId: () => CryptoJS.md5(this.randomString(12)),
   randomDeviceId2: () => '86' + this.randomDigits(13),
   randomDeviceId3: () => CryptoJS.md5(this.randomString(12)),
-  u8_sign: (data) => CryptoJS.HmacSHA1(data, HMAC_KEY)
+  u8_sign: (data, config) => CryptoJS.HmacSHA1(data, config.hmacKey)
 }

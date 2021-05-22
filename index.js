@@ -6,18 +6,16 @@ const game = require('./utils/game')
 const sleep = require('atomic-sleep')
 const logger = require('./utils/logger')
 const checkInfo = require('./utils/checkInfo')
-require('./config')
+const credentials = require('./credentials')
 
-if (!checkInfo(USER)) {
+if (!checkInfo(credentials)) {
   console.error('请检查账号信息是否正确填写！')
   return false
 }
 
-const player = new Player()
-player.account = USER.ACCOUNT
-player.password = USER.PASSWORD
+const player = new Player(credentials)
 
-account.updateConfig()
+account.updateConfig(player)
 
 // 登录
 account.accountLogin(player)
@@ -28,7 +26,7 @@ game.syncData(player)
 sleep(1000)
 
 // 更新在线状态
-game.syncStatus(player, MODULES)
+game.syncStatus(player, player.config.modules)
 sleep(1000)
 
 // 获取未完成订单
@@ -42,12 +40,12 @@ if (player.can_checkin) {
 }
 
 // 活动签到
-if (CHECKIN_ACTIVITY_ON) {
+if (player.config.checkInActivityOn) {
   let flag = false
 
   for (let i = 0; i < player.activity_checkin_history.length; ++i) {
     if (history[i]) {
-      game.checkInActivity(player, CHECKIN_ACTIVITY_ID, i)
+      game.checkInActivity(player, player.config.checkInActivityId, i)
       flag = true
       sleep(1000)
     }
