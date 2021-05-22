@@ -514,5 +514,22 @@ module.exports = {
     sleep(1000)
 
     confirmMission(player, 'daily_4319')
+  },
+  
+  // 完成任务
+  confirmMission(player, missionId) {
+    const response = network.postGame('/mission/confirmMission', { missionId }, player)
+    if (response) {
+      const responseData = JSON.parse(response.data)
+      if (
+        typeof responseData.code !== 'undefined' &&
+        responseData.code === 5657
+      )
+        logger.out(`任务 ${missionId} 已完成`)
+      return true
+    } else {
+      logger.error(`任务 ${missionId} 完成失败`)
+      return false
+    }
   }
 }
