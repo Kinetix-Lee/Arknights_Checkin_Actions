@@ -10,5 +10,8 @@
     "atomic-sleep": "^1.0.0",
     "axios": "^0.21.1",
     "crypto-js": "^4.0.0"
+  },
+  "scripts": {
+    "start": "node ./index.js"
   }
 }
