@@ -15,7 +15,7 @@
 - [x] utils/game.js | 游戏服务器相关操作
 - [ ] utils/serverchan.js | ServerChan 功能
 - [x] utils/checkInfo.js | 信息校对功能
-- [ ] index.js | Node.js 入口文件
+- [x] index.js | Node.js 入口文件
 - [ ] **国区（官服）基础功能**
 - [ ] **国区（哔哩哔哩渠道服）基础功能**
 - [ ] **日服基础功能**

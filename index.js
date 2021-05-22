@@ -17,17 +17,23 @@ const player = new Player()
 player.account = USER.ACCOUNT
 player.password = USER.PASSWORD
 
+account.updateConfig()
+
 // 登录
 account.accountLogin(player)
 game.Login(player)
 
 // 同步账号数据
+game.syncData(player)
+sleep(1000)
+
+// 更新在线状态
 game.syncStatus(player, MODULES)
-sleep(10000)
+sleep(1000)
 
 // 获取未完成订单
 game.getUnconfirmedOrderIdList(player)
-sleep(10000)
+sleep(1000)
 
 // 每日签到
 if (player.can_checkin) {
@@ -37,32 +43,41 @@ if (player.can_checkin) {
 
 // 活动签到
 if (CHECKIN_ACTIVITY_ON) {
-  game.checkInActivity(player)
-  sleep(10000)
+  let flag = false
+
+  for (let i = 0; i < player.activity_checkin_history.length; ++i) {
+    if (history[i]) {
+      game.checkInActivity(player, CHECKIN_ACTIVITY_ID, i)
+      flag = true
+      sleep(1000)
+    }
+  }
+
+  if (!flag) logger.out('今日活动已签到')
 }
 
 // 收取邮件
 game.checkMailbox(player)
-sleep(10000)
+sleep(1000)
 
 // 收取信用
 if (player.can_receive_social_point) game.receiveSocialPoint(player)
-sleep(10000)
+sleep(1000)
 
 // 同步基建数据
 game.syncBase(player)
-sleep(10000)
+sleep(1000)
 
 // 基建操作
 if (player.building_on) {
 
   // 获取制造站产物
   game.receiveResources(player)
-  sleep(10000)
+  sleep(1000)
 
   // 递交贸易站订单
   game.completeOrder(player)
-  sleep(10000)
+  sleep(1000)
 
   // 收取干员信赖
   game.receiveIntimacy(player)
