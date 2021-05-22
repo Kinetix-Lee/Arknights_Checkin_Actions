@@ -469,5 +469,21 @@ module.exports = {
       sleep(3000) // TODO: 此行必要性待验证
     })
     return listChar
+  },
+
+  // 设置基建助理干员
+  setAssignCharacter(player, listChar, roomSlot) {
+    const data = {
+      charInstIdList: listChar,
+      roomSlotId: roomSlot
+    }
+    const response = network.postGame('/building/assignChar', data, player)
+    if (response) {
+      logger.out('基建助理干员设置成功')
+      return true
+    } else {
+      logger.error('基建助理干员设置失败')
+      return false
+    }
   }
 }
