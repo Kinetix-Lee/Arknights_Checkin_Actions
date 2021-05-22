@@ -254,6 +254,15 @@ module.exports = {
     }
   },
 
+  // 查邮箱，自动收取邮件
+  checkMailbox(player) {
+    const listMail = this.getMailList(player)
+    listMail.forEach((mail) => {
+      this.receiveMail(player, mail.mailId, mail.type)
+      sleep(3000)
+    })
+  },
+
   // 每日签到
   checkIn(player) {
     const response = network.postGame('/user/checkIn', {}, player)
