@@ -1,5 +1,5 @@
 require('../config')
-const CryptoJS = require('CryptoJS')
+const CryptoJS = require('crypto-js')
 module.exports = {
   randomDigits(length) {
     const max = 9
