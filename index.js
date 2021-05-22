@@ -8,7 +8,7 @@ const logger = require('./utils/logger')
 const checkInfo = require('./utils/checkInfo')
 require('./config')
 
-if (!checkInfo()) {
+if (!checkInfo(USER)) {
   console.error('请检查账号信息是否正确填写！')
   return false
 }
