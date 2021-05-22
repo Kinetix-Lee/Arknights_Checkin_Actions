@@ -425,5 +425,49 @@ module.exports = {
       logger.error(`信用商品购买失败：goodId=${goodId}`)
       return false
     }
+  },
+
+  // 自动设置基建干员
+  arrangeWorkForChars(player) {
+    let listCharLow = []
+    let listCharFree = []
+    player.lowap_chars_list.forEach((list) => {
+      listCharLow.push(list.index)
+    })
+    player.free_chars_list.forEach((list) => {
+      listCharFree.push(list.index)
+    })
+
+    // TODO: 代码过于冗长，有待优化
+    // （首次重构暂时不改变代码结构）
+    listCharLow = this.arrangeRoomForChars(player, player.dormitory_room_slot, listCharLow)
+    listCharFree = this.arrangeRoomForChars(player, player.manufacture_room_slot, listCharFree)
+    listCharFree = this.arrangeRoomForChars(player, player.trade_room_slot, listCharFree)
+    listCharFree = this.arrangeRoomForChars(player, player.control_room_slot, listCharFree)
+    listCharFree = this.arrangeRoomForChars(player, player.power_room_slot, listCharFree)
+    listCharFree = this.arrangeRoomForChars(player, player.hire_room_slot, listCharFree)
+    listCharFree = this.arrangeRoomForChars(player, player.meeting_room_slot, listCharFree)
+  },
+
+  // 分配干员
+  arrangeRoomForChars(player, listRoom, listChar) {
+    listRoom.forEach((room) => {
+      // TODO: 解释此段代码
+      // （原作者没写注释，咱根本看不懂）
+      if (listChar.length === 0) return listChar
+      if (listChar.length < room.count) {
+        let list = listChar
+        for (let i = 1; i <= room.count - listChar; ++i) {
+          list.push(-1)
+        }
+        setAssignCharacter(player, list, room.slot_id)
+      } else {
+        const count = room.count
+        setAssignCharacter(player, listChar.slice(0, count), room.slot_id)
+        listChar.splice(0, count)
+      }
+      sleep(3000) // TODO: 此行必要性待验证
+    })
+    return listChar
   }
 }
