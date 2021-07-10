@@ -22,9 +22,6 @@ function get(url, params = {}, headersAddition = {}) {
     headers: Object.assign(COMMON_HEADER, headersAddition),
     params
   })
-    .catch((err) => {
-      logger.halt(err)
-    })
 }
 function post(url, data = {}, headersAddition = {}) {
   logger.out('POST ' + url)
@@ -32,9 +29,6 @@ function post(url, data = {}, headersAddition = {}) {
     headers: Object.assign(COMMON_HEADER, headersAddition),
     data
   })
-    .catch((err) => {
-      logger.halt(err)
-    })
 }
   
 module.exports = {
