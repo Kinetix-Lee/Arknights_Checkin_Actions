@@ -1,4 +1,4 @@
-const axios = require('axios')
+const axios = require('axios').default
 const logger = require('./logger')
 const user = require('../credentials')
 const COMMON_HEADER = [
@@ -13,45 +13,39 @@ const PASSPORT_HEADER = [
   'Connection: Keep-Alive',
 ]
 
+// 基础 get/post
+// 均自带 commonHeader，使用 Object.assign() 合并 headers
+// BTW, Fuck Promise.
+function get(url, params = {}, headersAddition = {}) {
+  console.log('hello');
+  return axios.get(url, {
+    headers: Object.assign(COMMON_HEADER, headersAddition),
+    params
+  })
+    .catch((err) => {
+      logger.halt(err)
+    })
+}
+function post(url, data = {}, headersAddition = {}) {
+  logger.out('POST ' + url)
+  return axios.post(url, {
+    headers: Object.assign(COMMON_HEADER, headersAddition),
+    data
+  })
+    .catch((err) => {
+      logger.halt(err)
+    })
+}
+  
 module.exports = {
-  // 基础 get/post
-  // 均自带 commonHeader，使用 Object.assign() 合并 headers
-  get(url, params={}, headersAddition={}) {
-    try {
-      const response = axios({
-        url,
-        method: 'get',
-        headers: Object.assign(COMMON_HEADER, headersAddition),
-        params
-      }) 
-      return response
-    } catch (error) {
-      logger.error(error)
-      return false
-    }
-  },
-  post(url, data={}, headersAddition={}) {
-    try {
-      const response = axios({
-        url,
-        method: 'post',
-        headers: Object.assign(COMMON_HEADER, headersAddition),
-        data
-      })
-      return response
-    } catch (error) {
-      logger.error(error)
-      return false
-    }
-  },
 
   // 命名规律：请求方法+服务器
 
   // 获取 配置信息
-  getConfig: (uri) => this.get(user.server.CONF + uri),
+  getConfig: (uri) => get(user.server.CONF + uri),
 
   // 访问 账号认证服务器
-  postAuth: (uri, data = {}) => this.post(user.server.AUTH + uri, data),
+  postAuth: (uri, data = {}) => post(user.server.AUTH + uri, data),
 
   // 访问 游戏服务器
   postGame(uri, data = {}, player) {
@@ -60,9 +54,10 @@ module.exports = {
       secret: player.secret,
       seqnum: player.seqnum
     }
-    return this.post(user.server.GAME + uri, data, headers)
+    return post(user.server.GAME + uri, data, headers)
   },
 
   // 访问 Yostar 账号服务器（外服专用）
-  postPassport: (uri, data = {}) => this.post(user.server.PASSPORT + uri, data, PASSPORT_HEADER)
+  postPassport: (uri, data = {}) => post(user.server.PASSPORT + uri, data, PASSPORT_HEADER)
+
 }
