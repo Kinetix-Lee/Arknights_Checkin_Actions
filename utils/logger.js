@@ -4,5 +4,9 @@ module.exports = {
   },
   error(message) {
     console.error(message)
+  },
+  halt(message) {
+    console.error(message)
+    process.exit(1)
   }
 }
