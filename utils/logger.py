@@ -1,13 +1,10 @@
 import os
 
-def info(message):
-  print('[I] ', message)
-
-def success(message):
-  print('[S] ', message)
+def out(message):
+  print(message)
 
 def error(err):
-  print('[E] ', err)
+  print('[ERROR] ', err)
 
 def halt(err):
   error(err)
