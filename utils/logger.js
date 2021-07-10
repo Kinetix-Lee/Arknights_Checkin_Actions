@@ -5,7 +5,7 @@ module.exports = {
   error(message) {
     console.error(message)
   },
-  halt(message) {
+  halt(message='出现错误') {
     console.error(message)
     process.exit(1)
   }
