@@ -37,4 +37,4 @@ const actions = {
 // }
 
 // executeList(player, config.actions)
-actions[config.actions[0]](player)
+actions[config.actions[0]](player, 0)
