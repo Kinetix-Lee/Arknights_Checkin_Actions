@@ -38,15 +38,15 @@ def __post(url, data={}, headersAddition={}, debug=True):
 
 # 获取配置信息
 def getConfig(uri):
-  return __get(user.server.conf + uri)
+  return __get(user['server']['conf'] + uri)
 
 # 访问账号认证服务器
 def postAuth(uri, data={}):
-  return __post(user.server.auth + uri, data)
+  return __post(user['server']['auth'] + uri, data)
 
 # 访问游戏服务器
 def postGame(uri, player, data={}):
-  return __post(user.server.game + uri, data, {
+  return __post(user['server']['game'] + uri, data, {
     'uid': player.uid,
     'secret': player.secret,
     'seqnum': player.seqnum
@@ -55,4 +55,4 @@ def postGame(uri, player, data={}):
 # 访问 Yostar 账号服务器
 # 外服专用
 def postPassport(uri, data={}):
-  return __post(user.server.passport + uri, data, PASSPORT_HEADER)
+  return __post(user['server']['passport'] + uri, data, PASSPORT_HEADER)
